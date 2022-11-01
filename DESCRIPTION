@@ -1,5 +1,5 @@
 Package: Summix
-Version: 2.4.0
+Version: 2.5.0
 LazyData: false
 Title: Summix: A method to estimate and adjust for population structure in genetic summary data
 Description: This package contains the Summix method for estimating and adjusting for ancestry in genetic summary allele frequency data. The function summix estimates reference ancestry proportions using a mixture model. The adjAF function produces ancestry adjusted allele frequencies for an observed sample with ancestry proportions matching a target person or sample.
