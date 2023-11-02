@@ -2,50 +2,85 @@
 % Please edit documentation in R/adjAF.R
 \name{adjAF}
 \alias{adjAF}
-\title{Ancestry adjusted allele frequencies}
+\title{adjAF}
 \usage{
-adjAF(data, reference, observed, pi.target, pi.observed)
+adjAF(
+  data,
+  reference,
+  observed,
+  pi.target,
+  pi.observed,
+  adj_method = "average",
+  N_reference = NULL,
+  N_observed = NULL,
+  filter = TRUE
+)
 }
 \arguments{
-\item{data}{dataframe of unadjusted allele frequency for observed group, K-1 reference ancestry allele frequencies for N SNPs}
+\item{data}{dataframe of unadjusted allele frequency for observed group, K reference group allele frequencies for N SNPs}
 
-\item{reference}{character vector of the column names for K-1 reference ancestry groups. The name of the last reference ancestry group is not included as that group is not used to estimate the adjusted allele frequencies.}
+\item{reference}{character vector of the column names for K reference groups.}
 
 \item{observed}{character value for the column name of observed data group}
 
-\item{pi.target}{numeric vector of the mixture proportions for K reference ancestry groups in the target sample or subject. The order must match the order of the reference columns with the last entry matching the missing reference group.}
+\item{pi.target}{numeric vector of the mixture proportions for K reference groups in the target individual or group.}
 
-\item{pi.observed}{numeric vector of the mixture proportions for K reference ancestry groups for the observed group. The order must match the order of the reference columns with the last entry matching the missing reference group.}
+\item{pi.observed}{numeric vector of the mixture proportions for K reference groups in the observed group.}
+
+\item{adj_method}{user choice of method for the allele frequency adjustment}
+
+\item{N_reference}{numeric vector of the sample sizes for each of the K reference groups.}
+
+\item{N_observed}{numeric value of the sample size of the observed group.}
+
+\item{filter}{sets adjusted allele frequencies equal to 1 if > 1, to 0 if > -.005 and < 0, and removes adjusted allele frequencies < -.005.}
 }
 \value{
-pi: table of input reference ancestry groups, pi.observed, and pi.target
+pi: table of input reference groups, pi.observed, and pi.target
 
-observed.data: name of the data column for the observed group from which adjusted ancestry allele frequency is estimated
+observed.data: name of the data column for the observed group from which adjusted allele frequency is estimated
 
 Nsnps: number of SNPs for which adjusted AF is estimated
 
 adjusted.AF: data frame of original data with an appended column of adjusted allele frequencies
+
+effective.sample.size: The sample size of individuals effectively represented by the adjusted allele frequencies
 }
 \description{
-Adjusts allele frequencies for heterogeneous populations in genetic data given proportion of reference ancestry groups
+Adjusts allele frequencies for heterogeneous populations in genetic data given proportion of reference groups
 }
 \examples{
 data(ancestryData)
-tmp.aa<-adjAF(data   = ancestryData,
-    reference   = c("ref_AF_eur_1000G"),
+adjusted_data<-adjAF(data   = ancestryData,
+    reference  = c("reference_AF_afr", "reference_AF_eur"),
     observed    = "gnomad_AF_afr",
-    pi.target   = c(0, 1),
-    pi.observed = c(.15, .85))
-tmp.aa$adjusted.AF[1:5,]
+    pi.target   = c(1, 0),
+    pi.observed = c(.85, .15),
+    adj_method = 'average',
+    N_reference = c(704,741),
+    N_observed = 20744,
+    filter = TRUE)
+adjusted_data$adjusted.AF[1:5,]
+
+
+
+}
+\references{
+https://github.com/hendriau/Summix2
 }
 \seealso{
-\code{\link{summix}} for estimating the proportion of reference ancestry groups and \url{https://github.com/hendriau/Summix} for further documentation
+\url{https://github.com/hendriau/Summix2} for further documentation.
 }
 \author{
-Gregory Matesi, \email{gregory.matesi@ucdenver.edu}
+Adelle Price, \email{adelle.price@cuanschutz.edu}
 
-Audrey Hendricks, \email{audrey.hendricks@ucdenver.edu}
+Hayley Wolff, \email{hayley.wolff@cuanschutz.edu}
+
+Audrey Hendricks, \email{audrey.hendricks@cuanschutz.edu}
 }
-\keyword{ancestry}
-\keyword{genetics}
+\keyword{admixture,}
+\keyword{distribution,}
+\keyword{genetics,}
 \keyword{mixture}
+\keyword{population}
+\keyword{stratification}

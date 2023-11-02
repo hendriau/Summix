@@ -2,34 +2,45 @@
 % Please edit documentation in R/summix.R
 \name{summix}
 \alias{summix}
-\title{Summix: estimating mixture proportions of reference group}
+\title{summix}
 \usage{
-summix(data, reference, observed, pi.start = c())
+summix(
+  data,
+  reference,
+  observed,
+  pi.start = NA,
+  goodness.of.fit = TRUE,
+  override_removeSmallRef = FALSE
+)
 }
 \arguments{
-\item{data}{a dataframe of the observed and reference allele frequencies for N genetic variants. See data formatting document at \href{https://github.com/hendriau/Summix}{https://github.com/hendriau/Summix} for more information.}
+\item{data}{A dataframe of the observed and reference allele frequencies for N genetic variants. See data formatting document at \href{https://github.com/hendriau/Summix}{https://github.com/hendriau/Summix} for more information.}
 
-\item{reference}{a character vector of the column names for the reference ancestries.}
+\item{reference}{A character vector of the column names for the reference groups.}
 
-\item{observed}{a character value that is the column name for the observed group.}
+\item{observed}{A character value that is the column name for the observed group.}
 
-\item{pi.start}{length K numeric vector of the starting guess for the ancestry proportions. If not specified, this defaults to 1/K where K is the number of reference ancestry groups.}
+\item{pi.start}{Length K numeric vector of the starting guess for the reference group proportions. If not specified, this defaults to 1/K where K is the number of reference groups.}
+
+\item{goodness.of.fit}{Default value is TRUE. If set as FALSE, the user will override the default goodness of fit measure and return the raw objective loss from slsqp.}
+
+\item{override_removeSmallRef}{Default value is FALSE. If set as TRUE, the user will override the automatic removal of reference groups with <1\% global proportions - this is not recommended.}
 }
 \value{
-data frame with the following columns
+A data frame with the following columns:
 
-objective: least square value at solution
+goodness.of.fit: scaled objective loss from slsqp() reflecting the fit of the reference data. Values between 0.5-1.5 are considered moderate fit and should be used with caution. Values greater than 1.5 indicate poor fit, and users should not perform further analyses using Summix.
 
 iterations: number of iterations for SLSQP algorithm
 
 time: time in seconds of SLSQP algorithm
 
-filtered: number of SNPs not used in estimation due to missing values
+filtered: number of genetic variants not used in the reference group mixture proportion estimation due to missing values.
 
-K columns of mixture proportions of reference ancestry groups input into the function
+K columns of mixture proportions of reference groups input into the function
 }
 \description{
-Summix: estimating mixture proportions of reference groups from large (N SNPs>10,000) genetic AF data
+Estimating mixture proportions of reference groups from large (N SNPs>10,000) genetic AF data.
 }
 \examples{
 # load the data
@@ -37,23 +48,29 @@ data("ancestryData")
 
 # Estimate 5 reference ancestry proportion values for the gnomAD African/African American group
 # using a starting guess of .2 for each ancestry proportion.
-summix( data = ancestryData, 
-    reference=c("ref_AF_afr_1000G", 
-        "ref_AF_eur_1000G", 
-        "ref_AF_sas_1000G", 
-        "ref_AF_iam_1000G", 
-        "ref_AF_eas_1000G"), 
-    observed="gnomad_AF_afr", 
-    pi.start = c(.2, .2, .2, .2, .2) )
+summix(data = ancestryData,
+    reference=c("reference_AF_afr",
+        "reference_AF_eas",
+        "reference_AF_eur",
+        "reference_AF_iam",
+        "reference_AF_sas"),
+    observed="gnomad_AF_afr",
+    pi.start = c(.2, .2, .2, .2, .2),
+    goodness.of.fit=TRUE)
 
+}
+\references{
+https://github.com/hendriau/Summix2
 }
 \seealso{
-\code{\link{adjAF}} for adjusting allele frequencies and \url{https://github.com/hendriau/Summix} for further documentation. \code{\link[nloptr]{slsqp}} function in the nloptr package for further details on Sequential Quadratic Programming \url{https://www.rdocumentation.org/packages/nloptr/versions/1.2.2.2/topics/slsqp}
+\url{https://github.com/hendriau/Summix2} for further documentation. \code{\link[nloptr]{slsqp}} function in the nloptr package for further details on Sequential Quadratic Programming \url{https://www.rdocumentation.org/packages/nloptr/versions/1.2.2.2/topics/slsqp}
 }
 \author{
-Gregory Matesi, \email{gregory.matesi@ucdenver.edu}
+Adelle Price, \email{adelle.price@cuanschutz.edu}
 
-Audrey Hendricks, \email{audrey.hendricks@ucdenver.edu}
+Hayley Wolff, \email{hayley.wolff@cuanschutz.edu}
+
+Audrey Hendricks, \email{audrey.hendricks@cuanschutz.edu}
 }
 \keyword{admixture,}
 \keyword{distribution,}

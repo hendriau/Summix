@@ -1,14 +1,8 @@
 ---
-title: "Summix2"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Summix2}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
----
 output: github_document
 ---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -19,6 +13,11 @@ knitr::opts_chunk$set(
 )
 ```
 
+# Summix2
+
+<!-- badges: start -->
+
+<!-- badges: end -->
 
 Summix2 is a suite of methods that detect and leverage substructure in genetic summary data. This package builds on Summix, a method that estimates and adjusts for substructure in genetic summary that was developed by the Hendricks Research Team at the University of Colorado Denver.
 
@@ -297,7 +296,7 @@ results <- summix_local(data = ancestryData,
                         diffThreshold = .02,
                         override_fit = F,
                         override_removeSmallAnc = TRUE,
-                        selection_scan = F,
+                        selection_scan = T,
                         position_col = "POS")
 
 print(results$results)
@@ -306,5 +305,111 @@ print(results$results)
 
 <br><br>
 
+Below is an example of plotting the reference ancestry proportions estimated in each block using *summix_local()*; where asterisks indicate local ancestry blocks that are at least nominally significant (p-value\<=.05).
 
+```{r echo=FALSE}
 
+suppressPackageStartupMessages(library(scales))
+suppressPackageStartupMessages(library(viridis))
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(tidyr))
+suppressPackageStartupMessages(library(ggplot2))
+
+makeAncestryPlot <- function(testResults, reference,
+                             title = "Ancestry Plot", addMarks = F,
+                             include_table = F, include_plot = T,
+                             totalBlocks = NULL, nominal = F) {
+  colors <- viridis(length(reference))
+  reference <- sort(reference)
+  testResults$Block <- as.numeric(rownames(testResults))
+  #make long format for plotting
+  plotData <- testResults %>% pivot_longer(all_of(reference))
+  if(addMarks == F) {
+    ggplot(plotData, aes(fill = name, x = (End_Pos + Start_Pos)/2,
+                         y = round(value, 4))) +
+      geom_bar(position = "fill", stat = "identity",
+               width = plotData$End_Pos - plotData$Start_Pos) +
+      scale_fill_manual(values = colors) +
+      scale_x_continuous(labels = comma) + xlab("Position") +
+      ylab("Proportion") + ggtitle(title)
+  } else {
+    allMarks <- data.frame(matrix(nrow = nrow(testResults), ncol = 3))
+    colnames(allMarks) <- c("x", "y", "mark")
+    pvals <- testResults[grep("p.", colnames(testResults))]
+    pvals <- pvals[,order(colnames(pvals))]
+
+    # for any block that exceeds 95th percentile of loss/1000SNPs set
+    # pvals = 1 so they won't be significant
+    toSet <- which(testResults$objective > quantile(testResults$objective, .95))
+    pvals[toSet,] <- 1
+    pvals2 <- apply(pvals, 1, min)
+
+    allMarks$x <- (testResults$End_Pos+testResults$Start_Pos)/2
+    allMarks$y <- 1.03
+    allMarks$i <- 1:nrow(allMarks)
+    if(nominal == F) {
+      allMarks <- allMarks %>% slice(which(pvals2 < .05/totalBlocks/(length(reference)-1)))
+    } else {
+      allMarks <- allMarks %>% slice(which(pvals2 < .05))
+    }
+    
+
+    if(nrow(allMarks) > 0) {
+      for(i in 1:nrow(allMarks)) {
+        allMarks[i,]$mark <- "*"
+      }
+    }
+    plotData <- testResults %>%
+      pivot_longer(all_of(reference))
+    if(nominal == F) {
+      p <- ggplot(plotData, aes(fill = name, x = (End_Pos + Start_Pos)/2,
+                                y = round(value, 4))) +
+        geom_bar(position = "fill", stat = "identity",
+                 width = plotData$End_Pos - plotData$Start_Pos) +
+        scale_fill_manual(values = colors) +
+        scale_x_continuous(labels = comma) + xlab("Position") +
+        ylab("Proportion") + ggtitle(title) + theme_bw() +
+        annotate("text", x = allMarks$x, y = allMarks$y, label = allMarks$mark,
+                 color = "black", size = 6)
+    } else {
+      p <- ggplot(plotData, aes(fill = name, x = (End_Pos + Start_Pos)/2,
+                                y = round(value, 4))) +
+        geom_bar(position = "fill", stat = "identity",
+                 width = plotData$End_Pos - plotData$Start_Pos) +
+        scale_fill_manual(values = colors) +
+        scale_x_continuous(labels = comma) + xlab("Position") +
+        ylab("Proportion") + ggtitle(title) + theme_bw() +
+        annotate("text", x = allMarks$x, y = allMarks$y, label = allMarks$mark,
+                 color = "grey50", size = 4)
+    }
+    
+
+    if(nrow(allMarks) == 0 | include_table == F) {
+      p
+    } else {
+      allMarks$`Start Position` <- testResults[allMarks$i,]$Start_Pos
+      allMarks$`End Position` <- testResults[allMarks$i,]$End_Pos
+      allMarks <- cbind(allMarks, round(pvals[allMarks$i,],8))
+      allMarks$x <- NULL
+      allMarks$y <- NULL
+      allMarks$mark <-NULL
+      allMarks$i <- NULL
+      t <- tableGrob(allMarks, theme = ttheme_minimal(base_size = 9),
+                     rows = rep("", nrow(allMarks)))
+      if(include_plot == F) {
+        grid.arrange(t)
+      } else {
+        grid.arrange(p, t, nrow = 2, heights = c(2.5, 1))
+      }
+    }
+  }
+}
+
+makeAncestryPlot(results$results,
+                 reference = c("reference_AF_afr", "reference_AF_eas", "reference_AF_eur", "reference_AF_iam", "reference_AF_sas"),
+                 title = "Example Local Ancestry",
+                 totalBlocks = dim(results$results)[1],
+                 addMarks = T,
+                 nominal = T)
+                 
+```
