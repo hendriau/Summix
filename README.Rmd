@@ -33,7 +33,7 @@ For individual function specifics in Summix2:
 
 # Package Installation
 
-To install Summix2 run the following commands:
+To install Summix2, ensure you are in the devel version of R- (to install in Windows click [here](https://cran.r-project.org/bin/windows/base/rdevel.html)). Start R (version "4.4")-the devel version- and run the following commands:
 
 ``` r
 if(!requireNamespace("BiocManager", quietly = TRUE))
