@@ -27,7 +27,7 @@ adjAF(
 
 \item{pi.observed}{numeric vector of the mixture proportions for K reference groups in the observed group.}
 
-\item{adj_method}{user choice of method for the allele frequency adjustment}
+\item{adj_method}{user choice of method for the allele frequency adjustment: options "average" and "leave_one_out" are available. Defaults to "average".}
 
 \item{N_reference}{numeric vector of the sample sizes for each of the K reference groups.}
 

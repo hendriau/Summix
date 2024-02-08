@@ -69,6 +69,17 @@ Optional parameters are:
 
 -   **override_removeSmallRef**: Default value is *FALSE*. If set as *TRUE*, the user will override the automatic removal of reference groups with \<1% global proportions - this is not recommended.
 
+-   **network**: Default value is FALSE. If set as TRUE, function will 
+return a network diagram with nodes as estimated substructure proportions 
+and edges as degree of similarity between the given node pair.
+  
+-   **N_reference**: numeric vector of the sample sizes for each of the K 
+reference groups; must be specified if network = "TRUE".
+
+-   **reference_colors**: A character vector of length K that specifies 
+the color each reference group node in the network plot. If not specified, 
+this defaults to K random colors.
+
 ## summix() Output
 
 A data frame with the following columns:
@@ -82,6 +93,10 @@ A data frame with the following columns:
 -   **filtered**: The number of genetic variants not used in the reference group mixture proportion estimation due to missing values.
 
 -   **K columns** of mixture proportions of reference groups input into the function.
+  
+  Additional Output if **summix_network** = *TRUE*:
+
+-   **Summix Network**: A network diagram with nodes as estimated substructure proportions and edges as degree of similarity between the given node pair; exportable as a png.
 
 <br><br><br>
 
@@ -107,9 +122,7 @@ Mandatory parameters are:
 
 -   **N_observed**: A numeric value of the sample size of the observed group.
 
-Optional parameters are:
-
--   **adj_method**: User choice of method for the allele frequency adjustment; options *"average"* and *"effective"* are available. Defaults to *"average"*.
+-   **adj_method**: User choice of method for the allele frequency adjustment; options *"average"* and *"leave_one_out"* are available. Defaults to *"average"*.
 
 -   **filter**: Sets adjusted allele frequencies equal to 1 if \> 1, to 0 if \> -.005 and \< 0, and removes adjusted allele frequencies \< -.005. Default is *TRUE*.
 
@@ -239,6 +252,30 @@ summix(data = ancestryData,
 
 
 ```
+<br><br>
+
+Below is an example of creating a Summix Network plot.
+
+```{r Summix Network example, eval = FALSE}
+Summix_output<- summix(data = ancestryData,
+    reference=c("reference_AF_afr",
+        "reference_AF_eas",
+        "reference_AF_eur",
+        "reference_AF_iam",
+        "reference_AF_sas"),
+    observed="gnomad_AF_afr",
+    pi.start = c(.2, .2, .2, .2, .2),
+    goodness.of.fit=TRUE,
+    network = TRUE, 
+    N_reference = c(704, 787, 741, 47, 545), reference_colors = c("#FDE725FF", "#5DC863FF", "#21908CFF", "#3B528BFF", "#440154FF"))
+
+Summix_Network <- Summix_output[[2]]
+
+Summix_Network
+
+```
+
+![](man/figures/README-Summix_Network_ex.png)
 
 <br><br><br><br>
 
@@ -307,7 +344,7 @@ print(results$results)
 
 Below is an example of plotting the reference ancestry proportions estimated in each block using *summix_local()*; where asterisks indicate local ancestry blocks that are at least nominally significant (p-value\<=.05).
 
-```{r echo=FALSE}
+```{r echo=FALSE, eval = FALSE}
 
 suppressPackageStartupMessages(library(scales))
 suppressPackageStartupMessages(library(viridis))
@@ -405,11 +442,13 @@ makeAncestryPlot <- function(testResults, reference,
   }
 }
 
-makeAncestryPlot(results$results,
-                 reference = c("reference_AF_afr", "reference_AF_eas", "reference_AF_eur", "reference_AF_iam", "reference_AF_sas"),
-                 title = "Example Local Ancestry",
-                 totalBlocks = dim(results$results)[1],
-                 addMarks = T,
-                 nominal = T)
+# makeAncestryPlot(results$results,
+#                  reference = c("reference_AF_afr", "reference_AF_eas", "reference_AF_eur", "reference_AF_iam", "reference_AF_sas"),
+#                  title = "Example Local Ancestry",
+#                  totalBlocks = dim(results$results)[1],
+#                  addMarks = T,
+#                  nominal = T)
                  
 ```
+
+![](man/figures/README-local_anc_ex.png)

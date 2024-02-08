@@ -80,6 +80,18 @@ Optional parameters are:
   *TRUE*, the user will override the automatic removal of reference
   groups with \<1% global proportions - this is not recommended.
 
+- **network**: Default value is FALSE. If set as TRUE, function will
+  return a network diagram with nodes as estimated substructure
+  proportions and edges as degree of similarity between the given node
+  pair.
+
+- **N_reference**: numeric vector of the sample sizes for each of the K
+  reference groups; must be specified if network = “TRUE”.
+
+- **reference_colors**: A character vector of length K that specifies
+  the color each reference group node in the network plot. If not
+  specified, this defaults to K random colors.
+
 ## summix() Output
 
 A data frame with the following columns:
@@ -101,6 +113,12 @@ A data frame with the following columns:
 
 - **K columns** of mixture proportions of reference groups input into
   the function.
+
+Additional Output if **summix_network** = *TRUE*:
+
+- **Summix Network**: A network diagram with nodes as estimated
+  substructure proportions and edges as degree of similarity between the
+  given node pair; exportable as a png.
 
 <br><br><br>
 
@@ -137,10 +155,8 @@ Mandatory parameters are:
 - **N_observed**: A numeric value of the sample size of the observed
   group.
 
-Optional parameters are:
-
 - **adj_method**: User choice of method for the allele frequency
-  adjustment; options *“average”* and *“effective”* are available.
+  adjustment; options *“average”* and *“leave_one_out”* are available.
   Defaults to *“average”*.
 
 - **filter**: Sets adjusted allele frequencies equal to 1 if \> 1, to 0
@@ -329,10 +345,34 @@ summix(data = ancestryData,
     pi.start = c(.2, .2, .2, .2, .2),
     goodness.of.fit=TRUE)
 #>   goodness.of.fit iterations           time filtered reference_AF_afr
-#> 1       0.4853597         20 0.2940361 secs        0         0.812142
+#> 1       0.4853597         20 0.5120511 secs        0         0.812142
 #>   reference_AF_eur reference_AF_iam
 #> 1         0.169953         0.017905
 ```
+
+<br><br>
+
+Below is an example of creating a Summix Network plot.
+
+``` r
+Summix_output<- summix(data = ancestryData,
+    reference=c("reference_AF_afr",
+        "reference_AF_eas",
+        "reference_AF_eur",
+        "reference_AF_iam",
+        "reference_AF_sas"),
+    observed="gnomad_AF_afr",
+    pi.start = c(.2, .2, .2, .2, .2),
+    goodness.of.fit=TRUE,
+    network = TRUE, 
+    N_reference = c(704, 787, 741, 47, 545), reference_colors = c("#FDE725FF", "#5DC863FF", "#21908CFF", "#3B528BFF", "#440154FF"))
+
+Summix_Network <- Summix_output[[2]]
+
+Summix_Network
+```
+
+![](man/figures/README-Summix_Network_ex.png)
 
 <br><br><br><br>
 
@@ -429,18 +469,18 @@ results <- summix_local(data = ancestryData,
                         position_col = "POS")
 #> [1] "Done getting LA proportions"
 #> [1] "Running internal simulations for SE"
-#> Time difference of 9.41966 mins
+#> Time difference of 29.38771 mins
 #> [1] "Discovered 7 LA blocks"
 
 print(results$results)
 #>   Start_Pos  End_Pos goodness.of.fit iterations       time filtered
-#> 1  10595784 19258643       1.2555376         10 0.08279800        0
-#> 2  19258643 25252606       0.5018649         13 0.08094192        0
-#> 3  25252606 30743600       0.2304807         11 0.09424901        0
-#> 4  30743600 35846592       0.2933341         14 0.07253194        0
-#> 5  35846592 42706228       0.5480859         14 0.08576393        0
-#> 6  42706228 47902876       0.2634092         11 0.07966685        0
-#> 7  47902876 50791970       0.2891929         10 0.07657695        0
+#> 1  10595784 19258643       1.2555376         10 0.10891914        0
+#> 2  19258643 25252606       0.5018649         13 0.11024404        0
+#> 3  25252606 30743600       0.2304807         11 0.13868499        0
+#> 4  30743600 35846592       0.2933341         14 0.09733486        0
+#> 5  35846592 42706228       0.5480859         14 0.11303401        0
+#> 6  42706228 47902876       0.2634092         11 0.10954499        0
+#> 7  47902876 50791970       0.2891929         10 0.10679197        0
 #>   reference_AF_afr reference_AF_eas reference_AF_eur reference_AF_iam
 #> 1         0.809208         0.000000         0.146185         0.034417
 #> 2         0.816933         0.000000         0.161511         0.021556
@@ -450,37 +490,37 @@ print(results$results)
 #> 6         0.810130         0.004046         0.181798         0.004025
 #> 7         0.811265         0.000000         0.148492         0.019896
 #>   reference_AF_sas nSNPs t.reference_AF_afr.avg t.reference_AF_eas.avg
-#> 1         0.010189   150            -0.43146401            -0.57945230
-#> 2         0.000000   149             1.18444316            -1.07862887
-#> 3         0.030550   149            -1.17638476            -0.17091846
-#> 4         0.000000   149             2.17710526            -0.25383482
-#> 5         0.000000   149            -1.19112569             2.48554378
-#> 6         0.000000   149            -0.31494564             0.08031783
-#> 7         0.020347   104            -0.04576155            -0.74696429
+#> 1         0.010189   150            -0.43468309            -0.58389478
+#> 2         0.000000   149             1.17387944            -1.09243958
+#> 3         0.030550   149            -1.15868088            -0.16876321
+#> 4         0.000000   149             2.20090322            -0.25357254
+#> 5         0.000000   149            -1.20071841             2.53683830
+#> 6         0.000000   149            -0.31239201             0.08064866
+#> 7         0.020347   104            -0.04536349            -0.76878194
 #>   t.reference_AF_eur.avg t.reference_AF_iam.avg t.reference_AF_sas.avg
-#> 1             -1.2105348              1.8368763              0.1220324
-#> 2              0.2216442              0.6927085             -1.5240005
-#> 3              0.1348313             -2.9492109              2.0828941
-#> 4              0.2061678             -0.1501437             -1.4877439
-#> 5             -0.2113785              0.4149459             -1.0442538
-#> 6              2.7551623             -1.7468578             -1.3448988
-#> 7             -1.0403598              0.4563984              1.0378094
+#> 1             -1.1544640              1.7990646              0.1200171
+#> 2              0.2223924              0.7045247             -1.5791349
+#> 3              0.1348306             -2.9261810              2.0622787
+#> 4              0.2045669             -0.1517046             -1.5083227
+#> 5             -0.2084699              0.4175251             -1.0203460
+#> 6              2.7473810             -1.7053123             -1.3051898
+#> 7             -1.0558793              0.4503020              1.0489763
 #>   p.reference_AF_afr p.reference_AF_eas p.reference_AF_eur p.reference_AF_iam
-#> 1         1.33324950         1.43684673        1.772022270         0.06820737
-#> 2         0.23812360         1.71750375        0.824894370         0.48957073
-#> 3         1.75868282         1.13548024        0.892927245         1.99629956
-#> 4         0.03104684         1.20002689        0.836941309         1.11914573
-#> 5         1.76450176         0.01404025        1.167119232         0.67877836
-#> 6         1.24675645         0.93609225        0.006598315         1.91727745
-#> 7         1.03641194         1.54322947        1.699414629         0.64905522
+#> 1         1.33558283         1.43983187        1.749854076         0.07401883
+#> 2         0.24231622         1.72359688        0.824312964         0.48220582
+#> 3         1.75156004         1.13378822        0.892927743         1.99603065
+#> 4         0.02928169         1.19982463        0.838189707         1.12037490
+#> 5         1.76823418         0.01221486        1.164853210         0.67689535
+#> 6         1.24482061         0.93582959        0.006749047         1.90977991
+#> 7         1.03609543         1.55623489        1.706529994         0.65343000
 #>   p.reference_AF_sas
-#> 1         0.90303667
-#> 2         1.87037174
-#> 3         0.03896956
-#> 4         1.86106829
-#> 5         1.70194079
-#> 6         1.81929851
-#> 7         0.30176571
+#> 1         0.90463020
+#> 2         1.88357427
+#> 3         0.04091791
+#> 4         1.86641058
+#> 5         1.69078177
+#> 6         1.80615982
+#> 7         0.29662060
 ```
 
 <br><br>
@@ -490,4 +530,4 @@ estimated in each block using *summix_local()*; where asterisks indicate
 local ancestry blocks that are at least nominally significant
 (p-value\<=.05).
 
-<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
+![](man/figures/README-local_anc_ex.png)

@@ -8,7 +8,7 @@
 #' @param observed character value for the column name of observed data group
 #' @param pi.target numeric vector of the mixture proportions for K reference groups in the target individual or group.
 #' @param pi.observed  numeric vector of the mixture proportions for K reference groups in the observed group.
-#' @param adj_method user choice of method for the allele frequency adjustment
+#' @param adj_method user choice of method for the allele frequency adjustment: options "average" and "leave_one_out" are available. Defaults to "average".
 #' @param N_reference numeric vector of the sample sizes for each of the K reference groups.
 #' @param N_observed numeric value of the sample size of the observed group.
 #' @param filter sets adjusted allele frequencies equal to 1 if > 1, to 0 if > -.005 and < 0, and removes adjusted allele frequencies < -.005.

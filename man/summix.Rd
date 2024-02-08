@@ -10,7 +10,10 @@ summix(
   observed,
   pi.start = NA,
   goodness.of.fit = TRUE,
-  override_removeSmallRef = FALSE
+  override_removeSmallRef = FALSE,
+  network = FALSE,
+  N_reference = NA,
+  reference_colors = NA
 )
 }
 \arguments{
@@ -25,6 +28,12 @@ summix(
 \item{goodness.of.fit}{Default value is TRUE. If set as FALSE, the user will override the default goodness of fit measure and return the raw objective loss from slsqp.}
 
 \item{override_removeSmallRef}{Default value is FALSE. If set as TRUE, the user will override the automatic removal of reference groups with <1\% global proportions - this is not recommended.}
+
+\item{network}{Default value is FALSE. If set as TRUE, function will return a network diagram with nodes as estimated substructure proportions and edges as degree of similarity between the given node pair.}
+
+\item{N_reference}{numeric vector of the sample sizes for each of the K reference groups; must be specified if network = "TRUE".}
+
+\item{reference_colors}{A character vector of length K that specifies the color each reference group node in the network plot. If not specified, this defaults to K random colors.}
 }
 \value{
 A data frame with the following columns:

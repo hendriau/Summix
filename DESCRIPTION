@@ -22,7 +22,11 @@ Imports:
     magrittr,
     methods,
     tibble,
-    tidyselect
+    tidyselect,
+    BEDASSLE,
+    scales,
+    visNetwork,
+    randomcoloR
 LazyData: true
 BugReports: https://github.com/Bioconductor/Summix/issues
 Config/testthat/edition: 3
