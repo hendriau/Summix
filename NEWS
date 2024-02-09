@@ -1,0 +1,7 @@
+
+Changes in version 0.99.8 (2021-02-11)
++ Fixed multiple issues in review for development
++ No longer using for loops in function code
+
+Changes in version 0.99.9 (2021-02-19)
++ Fixed NEWS text formatting

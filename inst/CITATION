@@ -1,0 +1,27 @@
+citHeader("To cite Summix in publications use:")
+
+citEntry(entry = "Article",
+  title        = "Characterizing substructure via mixture modeling of genetic similarity in large-scale summary statistics",
+  author       = personList(as.person("Hayley R Stoneman"),
+                   as.person("Adelle Price"),
+                   as.person("Nikole Scribner Trout"),
+                   as.person("Riley Lamont"),
+                   as.person("Souha Tifour"), 
+                   as.person("Nikita Pozdeyev"),
+                   as.person("Kristy Crooks"),
+                   as.person("Meng Lin"),
+                   as.person("Nicholas Rafaels"),
+                   as.person("Katie M Marker"),
+                   as.person("Christopher R Gignoux"),
+                   as.person("Audrey E Hendricks")),
+  journal      = "bioRxiv",
+  year         = "2024",
+  url          = "https://doi.org/10.1101/2024.01.29.577805",
+
+  textVersion  =
+  paste("Hayley R Stoneman, Adelle Price, Nikole Scribner Trout, Riley Lamont, Souha Tifour, Nikita Pozdeyev, Kristy Crooks, Meng Lin, Nicholas Rafaels, Katie M Marker, Christopher R Gignoux, Audrey E Henrdicks (2024).",
+        "Characterizing substructure via mixture modeling of genetic similarity in large-scale summary statistics",
+        "bioRxiv 2024.01.29.577805.",
+        "doi: https://doi.org/10.1101/2024.01.29.577805.")
+)
+
