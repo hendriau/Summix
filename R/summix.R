@@ -469,8 +469,7 @@ summix_network <- function(data = data,
       shadow = FALSE,
       smooth = FALSE,
       color = list(color = "lightgray", highlight = "#C62F4B")
-    ) %>%
-    visLayout(randomSeed = 10)
+    ) 
   return(visExport(sn, name = "Summix_Network", type = "png"))
   
 }
