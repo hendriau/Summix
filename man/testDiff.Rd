@@ -7,15 +7,15 @@
 testDiff(last, current, threshold = 0.01)
 }
 \arguments{
-\item{last}{ancestry proportions of block returned from summix}
+\item{last}{substructure proportions of block returned from summix}
 
-\item{current}{ancestry proportions of block returned from summix}
+\item{current}{substructure proportions of block returned from summix}
 
-\item{threshold}{if applicable the threshold for determing change point}
+\item{threshold}{if applicable the threshold for determining change point}
 }
 \value{
 true if passes threshold, false if not
 }
 \description{
-Helper function to determine whether ancestry  has changed for fast/catchup window algorithm
+Helper function to determine whether reference group has changed for fast/catchup window algorithm
 }

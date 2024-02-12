@@ -1,7 +1,7 @@
 #' summix_local
 #'
 #' @description
-#' Estimates local ancestry mixture proportions in genetic summary data; Also performs a selection scan (optional) that identifies regions of selection along the given chromosome.
+#' Estimates local substructure mixture proportions in genetic summary data; Also performs a selection scan (optional) that identifies potential regions of selection along the given chromosome.
 #'
 #' @param data a dataframe of the observed and reference allele frequencies for N genetic variants of a single chromosome. Must have a column for the positions with column name "POS"
 #' @param reference a character vector of the column names for the reference ancestries.
@@ -19,33 +19,33 @@
 #' @param NSimRef a vector the same length as reference and in the same order with the number of individuals in each reference group - used in re-simulation for standard error estimation
 #' @param override_fit default value is FALSE. An option for the user to override the autostop if the global objective is greater than 1.5 (poor fit)
 #' @param override_removeSmallAnc An option for the user to override the automatic removal of reference ancestries with <2% global proportions - not recommended; default value is FALSE.
-#' @param selection_scan An option to calculate local ancestry test statistic for the blocks; default value is FALSE.
+#' @param selection_scan An option to calculate local substructure test statistic for the blocks; default value is FALSE.
 #' @param position_col default value is 'POS'. Column of input data frame that contains the SNP position variable
 #' @param data a data frame of the observed group and reference group allele frequencies for N genetic variants on a single chromosome. Must contain a column specifying the genetic variant positions.
 #' @param reference a character vector of the column names for K reference groups.
 #' @param observed a character value that is the column name for the observed group.
 #' @param position_col a character value that is the column name for the genetic variants positions. Default is "POS".
 #' @param maxStepSize a numeric value that defines the maximum gap in base pairs between two consecutive genetic variants within a given window. Default is 1000.
-#' @param algorithm user choice of algorithm to define local ancestry blocks; options "fastcatch" and "windows" are available. "windows" uses a fixed window in a sliding windows algorithm. "fastcatch" allows dynamic window sizes. The "fastcatch" algorithm is recommended- though it is computationally slower. Default is "fastcatch".
+#' @param algorithm user choice of algorithm to define local substructure blocks; options "fastcatch" and "windows" are available. "windows" uses a fixed window in a sliding windows algorithm. "fastcatch" allows dynamic window sizes. The "fastcatch" algorithm is recommended- though it is computationally slower. Default is "fastcatch".
 #' @param type user choice of how to define window size; options "variants" and "bp" are available where "variants" defines window size as the number of variants in a given window and "bp" defines window size as the number of base pairs in a given window. Default is "variants".
 #' @param override_fit default is FALSE. If set as TRUE, the user will override the auto-stop of summix_local() that occurs if the global goodness of fit value is greater than 1.5 (indicating a poor fit of the reference data to the observed data).
 #' @param override_removeSmallAnc default is FALSE. If set as TRUE, the user will override the automatic removal of reference ancestries with <2% global proportions – this is not recommended.
-#' @param selection_scan user option to perform a selection scan on the given chromosome. Default is FALSE. If set as TRUE, a test statistic will be calculated for each local ancestry block. Note: the user can expect extended computation time if this option is set as TRUE.
+#' @param selection_scan user option to perform a selection scan on the given chromosome. Default is FALSE. If set as TRUE, a test statistic will be calculated for each local substructure block. Note: the user can expect extended computation time if this option is set as TRUE.
 #' @param windowOverlap Used if algorithm = "windows". A numeric value that defines the number of variants or the number of base pairs that overlap between the given sliding windows. Default is 200.
-#' @param diffThreshold Used if algorithm = "fastcatch". A numeric value that defines the percent difference threshold to mark the end of a local ancestry block. Default is 0.02.
+#' @param diffThreshold Used if algorithm = "fastcatch". A numeric value that defines the percent difference threshold to mark the end of a local substructure block. Default is 0.02.
 #' @param maxVariants Used if type = "variants". A numeric value that specifies the maximum number of genetic variants allowed to define a given window.
 #' @param maxWindowSize Used if type = "bp". A numeric value that defines the maximum allowed window size by the number of base pairs in a given window.
 #' @param minVariants Used if algorithm = "fastcatch" and type = "variants". A numeric value that specifies the minimum number of genetic variants allowed to define a given window.
 #' @param minWindowSize Used if algorithm = "fastcatch" and type = "bp". A numeric value that specifies the minimum number of base pairs allowed to define a given window.
-#' @param  NSimRef Used if f selection_scan = TRUE. A numeric vector of the sample sizes for each of the K reference groups that is in the same order as the reference parameter. This is used in a simulation framework that calculates within local ancestry block standard error.
+#' @param  NSimRef Used if f selection_scan = TRUE. A numeric vector of the sample sizes for each of the K reference groups that is in the same order as the reference parameter. This is used in a simulation framework that calculates within local substructure block standard error.
 #'
-#' @return data frame with a row for each local ancestry block and the following columns:
+#' @return data frame with a row for each local substructure block and the following columns:
 #' @return goodness.of.fit: scaled objective reflecting the fit of the reference data. Values between 0.5-1.5 are considered moderate fit and should be used with caution. Values greater than 1.5 indicate poor fit, and users should not perform further analyses using summix
 #' @return iterations: number of iterations for SLSQP algorithm
 #' @return time: time in seconds of SLSQP algorithm
 #' @return filtered: number of SNPs not used in estimation due to missing values
-#' @return K columns of mixture proportions of reference ancestry groups input into the function
-#' @return nSNPs: number of SNPs in the given local ancestry block
+#' @return K columns of mixture proportions of reference groups input into the function
+#' @return nSNPs: number of SNPs in the given local substructure block
 #'
 #' @author Hayley Wolff (Stoneman), \email{hayley.wolff@cuanschutz.edu}
 #' @author Audrey Hendricks, \email{audrey.hendricks@cuanschutz.edu}
@@ -104,10 +104,10 @@ summix_local <- function(data, reference, observed, goodness.of.fit = TRUE,
     stop("ERROR: data must be a data.frame as described in the vignette")
   }
   if(typeof(observed)!="character"){
-    stop("ERROR: 'observed' must be a character string for the column name of the observed ancestry in data")
+    stop("ERROR: 'observed' must be a character string for the column name of the observed group in data")
   }
   if(!(observed %in% names(data))){
-    stop("ERROR: 'observed' must be the column name of the observed ancestry in data")
+    stop("ERROR: 'observed' must be the column name of the observed group in data")
   }
   if(typeof(reference)!="character"){
     stop("ERROR: 'reference' must be a vector of column names from data to be used in the reference")
@@ -234,7 +234,7 @@ summix_local <- function(data, reference, observed, goodness.of.fit = TRUE,
                                              observed = observed,
                                              goodness.of.fit = goodness.of.fit)
           
-          #determine if new ancestry proportions are different than last
+          #determine if new substructure proportions are different than last
           areDiff <- testDiff(lastProportions, currentProportions,
                               threshold = diffThreshold)
           if(areDiff) { # if different save new block with point prior to current end point
@@ -320,7 +320,7 @@ summix_local <- function(data, reference, observed, goodness.of.fit = TRUE,
                                        observed = observed,
                                        goodness.of.fit = goodness.of.fit)
           
-          #determine if new ancestry proportions are different than last
+          #determine if new substructure proportions are different than last
           areDiff <- testDiff(lastProportions, currentProportions,
                               threshold = diffThreshold)
           if(areDiff) { # if different save new block with point prior to current end point
@@ -490,7 +490,7 @@ variantGetNext <- function(positions, start, minVariants) {
 #' @param data the input dataframe subsetting to just the chromosome
 #' @param start index of start of block
 #' @param end index of the end of block
-#' @param props ancestry proportions for the block returned from summix
+#' @param props substructure proportions for the block returned from summix
 #' @param results current results dataframe
 #'
 #' @export
@@ -511,10 +511,10 @@ saveBlock <- function(data, start, end, props, results) {
 #' testDiff
 #'
 #' @description
-#' Helper function to determine whether ancestry  has changed for fast/catchup window algorithm
-#' @param last ancestry proportions of block returned from summix
-#' @param current ancestry proportions of block returned from summix
-#' @param threshold if applicable the threshold for determing change point
+#' Helper function to determine whether reference group has changed for fast/catchup window algorithm
+#' @param last substructure proportions of block returned from summix
+#' @param current substructure proportions of block returned from summix
+#' @param threshold if applicable the threshold for determining change point
 #' @return true if passes threshold, false if not
 #'
 #' @export
@@ -641,10 +641,10 @@ doInternalSimulation <- function(windows, data, reference, observed, nRefs) {
 }
 
 
-# summix function that does not have any print outputs for local ancestry use
+# summix function that does not have any print outputs for local substructure use
 summix_quiet <- function(data, reference, observed, pi.start = NA, goodness.of.fit = TRUE) {
   start_time = Sys.time()
-  # get the ancestry proportions using the summix_calc helper function either with or without pi.start specified
+  # get the substructure proportions using the summix_calc helper function either with or without pi.start specified
   if(!is.na(pi.start)) {
     sum_res <- summix_calc(data = data, reference = reference,
                            observed = observed, pi.start = pi.start)

@@ -13,7 +13,7 @@ saveBlock(data, start, end, props, results)
 
 \item{end}{index of the end of block}
 
-\item{props}{ancestry proportions for the block returned from summix}
+\item{props}{substructure proportions for the block returned from summix}
 
 \item{results}{current results dataframe}
 }

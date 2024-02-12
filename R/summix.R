@@ -408,11 +408,14 @@ summix_network <- function(data = data,
                            reference_colors=reference_colors){
   
   
+  # subset summix results to only estimated substructure proportions
   detected_refs <- names(sum_res[5:length(sum_res)])
+  # subset reference sample sizes to match only the refs estimated in summix output
   N_reference = N_reference[which(reference %in% detected_refs)]
+  # subset references to match only the refs estimated in summix output
   reference = reference[which(reference %in% detected_refs)]
   
-  
+  # filter estimated substructure props to those greater than .005
   if (identical(which(sum_res[1,5:length(sum_res)]<.005), integer(0))){
     non_zero_refs <- reference
     non_zero_N_refs <- N_reference
@@ -421,23 +424,28 @@ summix_network <- function(data = data,
     non_zero_N_refs <- N_reference[-c(which(sum_res[1,5:length(sum_res)]<.005))]
   }
   
-  
+  # estimate allele counts and allele numbers for each SNP in each reference group using their respective SNP AFs and reference group sample size 
   alleleCounts <- t(as.matrix(sweep(data[1:dim(data)[1],non_zero_refs], MARGIN=2, 2*non_zero_N_refs, `*`)))
   alleleNumber <- t(as.matrix(sweep(matrix(1, dim(data)[1], length(non_zero_refs)), MARGIN = 2, 2*non_zero_N_refs, `*`)))
   rownames(alleleNumber) <- non_zero_refs
   
-  
+  # calculate Weir and Hill pairwise FST between each reference group pair 
   fst_pure <- calculate.all.pairwise.Fst(allele.counts = alleleCounts,
                                          sample.sizes = alleleNumber)
   
+  #ensure column and rownames of pairwise FST estimate matrix reflect the reference groups
   colnames(fst_pure) <- non_zero_refs
   rownames(fst_pure) <- non_zero_refs
   
+  #convert pairwise FST matrix to dataframe with each reference group pair and pairwise FST estimate (named 'weight')
   edges <- data.frame(row=rownames(fst_pure)[row(fst_pure)[upper.tri(fst_pure)]],
                       col=colnames(fst_pure)[col(fst_pure)[upper.tri(fst_pure)]],
                       corr=fst_pure[upper.tri(fst_pure)])
   colnames(edges) <- c("from", "to", "weight")
   
+  
+  #if user has input a 'reference colors' vector specifying the color of each node in the network plot, use these to build network plot
+  #if not, choose node colors randomly
   if (length(reference_colors) != 1){
     reference_colors = reference_colors[which(reference %in% non_zero_refs)]
   }else{
@@ -445,32 +453,38 @@ summix_network <- function(data = data,
     print(reference_colors)
   }
   
+  #build data frame holding id (ref group names), proportions (ref group substructure estimates), references, color (each node color corresponding to the given ref group)
   nodes <- data.frame(id = non_zero_refs,
                       proportions = as.numeric(sum_res[1, non_zero_refs]),
                       references = non_zero_refs,
                       color = reference_colors)
   
+  #convert summix proportion estimate to a percentage and attach to node label
   nodes$label <- paste0(nodes$references, " ", percent(round(nodes$proportions,2)))
   
+  #set node magnification
   nodes$size <- 90*nodes$proportions
+  
+  #standardize node widths based on distribution of pairwise FST estimates across all reference groups to be in network plot
   edges$width = -1*as.numeric(5*scale(edges$weight))
   
+  #create network vizualization
   sn <- visNetwork(nodes, edges, width = "100%") %>%
     visNodes(
-      shape = "dot",
-      shadow = T,
-      size = 100,
-      font = list(size = 14),
+      shape = "dot", #node shape to be circular 
+      shadow = T, #include shadows next to each node
+      size = 100, #maximize node size
+      font = list(size = 14), #set font size
       color = list(
-        border = "#013848",
+        border = "#013848", #color of border around each node
         highlight = "#FF8000"),
     ) %>%
     visEdges(
-      shadow = FALSE,
-      smooth = FALSE,
-      color = list(color = "lightgray", highlight = "#C62F4B")
+      shadow = FALSE, 
+      smooth = FALSE, 
+      color = list(color = "lightgray", highlight = "#C62F4B") #if user clicks on edge, highlights in red
     ) 
-  return(visExport(sn, name = "Summix_Network", type = "png"))
+  return(visExport(sn, name = "Summix_Network", type = "png")) #return visualization plot to users with a button on visual that allows for direct export to png; auto-titled 'Summix_Network'
   
 }
 

@@ -59,11 +59,8 @@ adjAF <- function(data,
                   filter = TRUE) {
   
   #check for correct format of user inputs
-  if(length(reference) != length(pi.target)){
-    stop("ERROR: Please make sure that you are entering k groups in reference.")
-  }
-  if(length(N_reference) != length(reference)){
-    stop("ERROR: Please make sure that the lengths of N_reference and reference match.")
+  if(length(N_reference) != length(pi.observed)){
+    stop("ERROR: Please make sure that the lengths of N_reference and pi.observed match.")
   }
   if(length(pi.target) != length(pi.observed)){
     stop("ERROR: Please make sure that the lengths of pi.target and pi.observed match.")
@@ -130,6 +127,11 @@ adjAF <- function(data,
   allResults <- data.frame(matrix(nrow = nrow(data), ncol = length(reference)))
   #If user has selected 'average' method for AF adjustment (this is default)
   if (adj_method == "average"){
+    ##when method is ave
+    if(length(reference) != length(pi.target)){
+      stop("ERROR: Please make sure that you are entering k groups in reference.")
+    }
+    
     for(i in 1:length(reference)) {
       #Iteratively leave each reference group out and calculate adjusted AF
       temp <- pi.target[i]
@@ -177,58 +179,39 @@ adjAF <- function(data,
   }
   
   
-  #If user has selected 'effective' method for AF adjustment
-  if (adj_method == "effective"){
-    newResults <- data.frame(matrix(nrow = nrow(data), ncol = length(reference)))
-    N_effective= vector()
-    
-    effective_new_prop <- vector()
-    for(i in 1:length(reference)) {
-      #Iteratively leave each reference group out and calculate adjusted AF
-      temp <- pi.target[i]
-      s.targ <- pi.target[-i]
-      s.targ <- c(s.targ, temp)
-      
-      temp <- pi.observed[i]
-      s.obs <- pi.observed[-i]
-      s.obs <- c(s.obs, temp)
-      
-      res <- invisible(adjAF_calc(data = data,
-                                  reference = reference[-i],
-                                  observed = observed,
-                                  pi.target = s.targ,
-                                  pi.observed = s.obs))
-      
-      allResults[,i] <- res$adjusted.AF$adjustedAF
-      #calculate N_effective for this iteration
-      N_effective[i] <- calc_effective_N(N_reference[-i],N_observed,s.targ,s.obs)
-      
+  #If user has selected 'leave_one_out' method for AF adjustment
+  if (adj_method == "leave_one_out"){
+    ##when method is LO
+    if(length(reference) != (length(pi.target)-1)){
+      stop("ERROR: Please make sure that you are entering k-1 groups in reference.")
     }
     
-    #Create final adjusted AF as weighted sum
-    #Weight all adjusted AFs that leave one reference group out at a time by N_effective proportion of that reference group
-    for(m in 1:length(reference)){
-      newResults[,m] <- allResults[,m]* (N_effective[m]/sum(N_effective))
-    }
-    #sum all N_effective-weighted adjusted AFs to get final adjusted AF
-    newResults$effective_summ<- apply(newResults, 1, sum)
+    res <- invisible(adjAF_calc(data = data,
+                                reference = reference,
+                                observed = observed,
+                                pi.target = pi.target,
+                                pi.observed = pi.observed))
+    
+    LO_res <- as.vector(t(res$adjusted.AF$adjustedAF))
+    
     
     #if user has set filter == TRUE (this is default), remove negative values less than -.005 from final adjusted AFs, set adjusted AFs less than 0 and greater than -.005 to 0, and set adjusted AFs greater than 1 to 1
     if (filter == TRUE){
-      before_filt_negative = length(newResults$effective_summ)
-      before_filt_less = length(newResults$effective_summ[newResults$effective_summ < 0 & newResults$effective_summ > -0.005])
-      before_filt_greater = length(newResults$effective_summ[newResults$effective_summ > 1])
-      newResults$effective_summ[newResults$effective_summ > 1] <- 1
-      newResults$effective_summ[newResults$effective_summ < 0 & newResults$effective_summ > -0.005] <- 0
-      newResults$effective_summ[newResults$effective_summ <= -0.005] <- NA
+      before_filt_negative = length(LO_res)
+      before_filt_less = length(LO_res[LO_res < 0 & LO_res > -0.005])
+      before_filt_greater = length(LO_res[LO_res > 1])
+      LO_res[LO_res > 1] <- 1
+      LO_res[LO_res < 0 & LO_res > -0.005] <- 0
+      LO_res[LO_res <= -0.005] <- NA
+      
       
       #Let user know how many adjusted AFs were set to 0, 1, or removed from the final adjusted AF dataframe
       cat('\n')
-      print(paste0("Note: In this AF adjustment, ", before_filt_less, " SNPs (with adjusted AF > -.005 & < 0) were rounded to 0. ", before_filt_greater, " SNPs (with adjusted AF > 1) were rounded to 1, and ", length(newResults$effective_summ[newResults$effective_summ <= -0.005]), " SNPs (with adjusted AF <= -.005) were removed from the final results."))
+      print(paste0("Note: In this AF adjustment, ", before_filt_less, " SNPs (with adjusted AF > -.005 & < 0) were rounded to 0. ", before_filt_greater, " SNPs (with adjusted AF > 1) were rounded to 1, and ", length(res$adjusted.AF$adjustedAF[res$adjusted.AF$adjustedAF <= -0.005]), " SNPs (with adjusted AF <= -.005) were removed from the final results."))
       cat('\n')
     }
     
-    res$adjusted.AF$adjustedAF <- newResults$effective_summ
+    res$adjusted.AF$adjustedAF <- LO_res
     #remove any NA's in dataframe (there will only be NA's if user has set filter ==TRUE and the adjusted AFs less than -.005 were set as NA in the previous code chunk)
     res$adjusted.AF <- na.omit(res$adjusted.AF)
     res$Nsnps <- length(res$adjusted.AF$adjustedAF)

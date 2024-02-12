@@ -36,7 +36,7 @@ summix_local(
 
 \item{type}{user choice of how to define window size; options "variants" and "bp" are available where "variants" defines window size as the number of variants in a given window and "bp" defines window size as the number of base pairs in a given window. Default is "variants".}
 
-\item{algorithm}{user choice of algorithm to define local ancestry blocks; options "fastcatch" and "windows" are available. "windows" uses a fixed window in a sliding windows algorithm. "fastcatch" allows dynamic window sizes. The "fastcatch" algorithm is recommended- though it is computationally slower. Default is "fastcatch".}
+\item{algorithm}{user choice of algorithm to define local substructure blocks; options "fastcatch" and "windows" are available. "windows" uses a fixed window in a sliding windows algorithm. "fastcatch" allows dynamic window sizes. The "fastcatch" algorithm is recommended- though it is computationally slower. Default is "fastcatch".}
 
 \item{minVariants}{Used if algorithm = "fastcatch" and type = "variants". A numeric value that specifies the minimum number of genetic variants allowed to define a given window.}
 
@@ -50,20 +50,20 @@ summix_local(
 
 \item{maxStepSize}{a numeric value that defines the maximum gap in base pairs between two consecutive genetic variants within a given window. Default is 1000.}
 
-\item{diffThreshold}{Used if algorithm = "fastcatch". A numeric value that defines the percent difference threshold to mark the end of a local ancestry block. Default is 0.02.}
+\item{diffThreshold}{Used if algorithm = "fastcatch". A numeric value that defines the percent difference threshold to mark the end of a local substructure block. Default is 0.02.}
 
-\item{NSimRef}{Used if f selection_scan = TRUE. A numeric vector of the sample sizes for each of the K reference groups that is in the same order as the reference parameter. This is used in a simulation framework that calculates within local ancestry block standard error.}
+\item{NSimRef}{Used if f selection_scan = TRUE. A numeric vector of the sample sizes for each of the K reference groups that is in the same order as the reference parameter. This is used in a simulation framework that calculates within local substructure block standard error.}
 
 \item{override_fit}{default is FALSE. If set as TRUE, the user will override the auto-stop of summix_local() that occurs if the global goodness of fit value is greater than 1.5 (indicating a poor fit of the reference data to the observed data).}
 
 \item{override_removeSmallAnc}{default is FALSE. If set as TRUE, the user will override the automatic removal of reference ancestries with <2\% global proportions – this is not recommended.}
 
-\item{selection_scan}{user option to perform a selection scan on the given chromosome. Default is FALSE. If set as TRUE, a test statistic will be calculated for each local ancestry block. Note: the user can expect extended computation time if this option is set as TRUE.}
+\item{selection_scan}{user option to perform a selection scan on the given chromosome. Default is FALSE. If set as TRUE, a test statistic will be calculated for each local substructure block. Note: the user can expect extended computation time if this option is set as TRUE.}
 
 \item{position_col}{a character value that is the column name for the genetic variants positions. Default is "POS".}
 }
 \value{
-data frame with a row for each local ancestry block and the following columns:
+data frame with a row for each local substructure block and the following columns:
 
 goodness.of.fit: scaled objective reflecting the fit of the reference data. Values between 0.5-1.5 are considered moderate fit and should be used with caution. Values greater than 1.5 indicate poor fit, and users should not perform further analyses using summix
 
@@ -73,12 +73,12 @@ time: time in seconds of SLSQP algorithm
 
 filtered: number of SNPs not used in estimation due to missing values
 
-K columns of mixture proportions of reference ancestry groups input into the function
+K columns of mixture proportions of reference groups input into the function
 
-nSNPs: number of SNPs in the given local ancestry block
+nSNPs: number of SNPs in the given local substructure block
 }
 \description{
-Estimates local ancestry mixture proportions in genetic summary data; Also performs a selection scan (optional) that identifies regions of selection along the given chromosome.
+Estimates local substructure mixture proportions in genetic summary data; Also performs a selection scan (optional) that identifies potential regions of selection along the given chromosome.
 }
 \examples{
 data(ancestryData)
