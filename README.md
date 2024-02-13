@@ -184,7 +184,7 @@ A data frame with the following columns:
 
 # summix_local
 
-The *summix_local()* function estimates local ancestry mixture
+The *summix_local()* function estimates local substructure mixture
 proportions in genetic summary data using the same *slspq()*
 functionality as *summix()*. *summix_local()* also performs a selection
 scan (optional) that identifies regions of selection along the given
@@ -213,7 +213,7 @@ Mandatory parameters are:
 
 Optional parameters are:
 
-- **algorithm**: User choice of algorithm to define local ancestry
+- **algorithm**: User choice of algorithm to define local substructure
   blocks; options *“fastcatch”* and *“windows”* are available.
   *“windows”* uses a fixed window in a sliding windows algorithm.
   *“fastcatch”* allows dynamic window sizes. The *“fastcatch”* algorithm
@@ -237,8 +237,8 @@ Optional parameters are:
 
 - **selection_scan**: User option to perform a selection scan on the
   given chromosome. Default is *FALSE*. If set as *TRUE*, a test
-  statistic will be calculated for each local ancestry block. Note: the
-  user can expect extended computation time if this option is set as
+  statistic will be calculated for each local substructure block. Note:
+  the user can expect extended computation time if this option is set as
   *TRUE*.
 
 Conditional parameters are:
@@ -252,7 +252,8 @@ If **algorithm** = *“windows”*:
 If **algorithm** = *“fastcatch”*:
 
 - **diffThreshold**: A numeric value that defines the percent difference
-  threshold to mark the end of a local ancestry block. Default is 0.02.
+  threshold to mark the end of a local substructure block. Default is
+  0.02.
 
 If **type** = *“variants”*:
 
@@ -279,12 +280,12 @@ If **selection_scan** = *TRUE*:
 - **NSimRef**: A numeric vector of the sample sizes for each of the K
   reference groups that is in the same order as the reference parameter.
   This is used in a simulation framework that calculates within local
-  ancestry block standard error.
+  block substructure standard error.
 
 ## summix_local() Output
 
-A data frame with a row for each local ancestry block and the following
-columns:
+A data frame with a row for each local substructure block and the
+following columns:
 
 - **goodness.of.fit**: Scaled objective loss from *slsqp()* reflecting
   the fit of the reference data. Values between 0.5-1.5 are considered
@@ -302,19 +303,19 @@ columns:
 - **filtered**: The number of genetic variants not used in the reference
   group mixture proportion estimation due to missing values.
 
-- **K columns** of mixture proportions of reference ancestry in the
-  given local ancestry block.
+- **K columns** of mixture proportions of reference group in the given
+  local substructure block.
 
-- **nSNPs**: The number of genetic variants in the given local ancestry
-  block.
+- **nSNPs**: The number of genetic variants in the given local
+  substructure block.
 
 Additional Output if **selection_scan** = *TRUE*:
 
-- **K columns** of local ancestry test statistics for each reference
-  ancestry in the given local ancestry block.
+- **K columns** of local substructure test statistics for each reference
+  group in the given local substructure block.
 
-- **K columns** of p-values for each reference ancestry in the given
-  local ancestry block. P-values calculated using the Student’s
+- **K columns** of p-values for each reference group in the given local
+  substructure block. P-values calculated using the Student’s
   t-distribution with degrees of freedom=(nSNPs in the block)-1.
   <br><br><br>
 
@@ -333,8 +334,8 @@ library(Summix)
 # load the data
 data("ancestryData")
 
-# Estimate 5 reference ancestry proportion values for the gnomAD African/African American group
-# using a starting guess of .2 for each ancestry proportion.
+# Estimate 5 reference group proportion values for the gnomAD African/African American group
+# using a starting guess of .2 for each estimated proportion.
 summix(data = ancestryData,
     reference=c("reference_AF_afr",
         "reference_AF_eas",
@@ -344,8 +345,8 @@ summix(data = ancestryData,
     observed="gnomad_AF_afr",
     pi.start = c(.2, .2, .2, .2, .2),
     goodness.of.fit=TRUE)
-#>   goodness.of.fit iterations           time filtered reference_AF_afr
-#> 1       0.4853597         20 0.5120511 secs        0         0.812142
+#>   goodness.of.fit iterations          time filtered reference_AF_afr
+#> 1       0.4853597         20 0.611496 secs        0         0.812142
 #>   reference_AF_eur reference_AF_iam
 #> 1         0.169953         0.017905
 ```
@@ -469,18 +470,18 @@ results <- summix_local(data = ancestryData,
                         position_col = "POS")
 #> [1] "Done getting LA proportions"
 #> [1] "Running internal simulations for SE"
-#> Time difference of 29.38771 mins
+#> Time difference of 26.28405 mins
 #> [1] "Discovered 7 LA blocks"
 
 print(results$results)
 #>   Start_Pos  End_Pos goodness.of.fit iterations       time filtered
-#> 1  10595784 19258643       1.2555376         10 0.10891914        0
-#> 2  19258643 25252606       0.5018649         13 0.11024404        0
-#> 3  25252606 30743600       0.2304807         11 0.13868499        0
-#> 4  30743600 35846592       0.2933341         14 0.09733486        0
-#> 5  35846592 42706228       0.5480859         14 0.11303401        0
-#> 6  42706228 47902876       0.2634092         11 0.10954499        0
-#> 7  47902876 50791970       0.2891929         10 0.10679197        0
+#> 1  10595784 19258643       1.2555376         10 0.11531401        0
+#> 2  19258643 25252606       0.5018649         13 0.13095212        0
+#> 3  25252606 30743600       0.2304807         11 0.12141204        0
+#> 4  30743600 35846592       0.2933341         14 0.09059906        0
+#> 5  35846592 42706228       0.5480859         14 0.12785411        0
+#> 6  42706228 47902876       0.2634092         11 0.09985900        0
+#> 7  47902876 50791970       0.2891929         10 0.10150504        0
 #>   reference_AF_afr reference_AF_eas reference_AF_eur reference_AF_iam
 #> 1         0.809208         0.000000         0.146185         0.034417
 #> 2         0.816933         0.000000         0.161511         0.021556
@@ -490,44 +491,44 @@ print(results$results)
 #> 6         0.810130         0.004046         0.181798         0.004025
 #> 7         0.811265         0.000000         0.148492         0.019896
 #>   reference_AF_sas nSNPs t.reference_AF_afr.avg t.reference_AF_eas.avg
-#> 1         0.010189   150            -0.43468309            -0.58389478
-#> 2         0.000000   149             1.17387944            -1.09243958
-#> 3         0.030550   149            -1.15868088            -0.16876321
-#> 4         0.000000   149             2.20090322            -0.25357254
-#> 5         0.000000   149            -1.20071841             2.53683830
-#> 6         0.000000   149            -0.31239201             0.08064866
-#> 7         0.020347   104            -0.04536349            -0.76878194
+#> 1         0.010189   150            -0.42515627            -0.56563248
+#> 2         0.000000   149             1.17498125            -1.12168665
+#> 3         0.030550   149            -1.15490928            -0.16849942
+#> 4         0.000000   149             2.14943215            -0.25487230
+#> 5         0.000000   149            -1.17919401             2.51861561
+#> 6         0.000000   149            -0.30482100             0.07895457
+#> 7         0.020347   104            -0.04498638            -0.79311456
 #>   t.reference_AF_eur.avg t.reference_AF_iam.avg t.reference_AF_sas.avg
-#> 1             -1.1544640              1.7990646              0.1200171
-#> 2              0.2223924              0.7045247             -1.5791349
-#> 3              0.1348306             -2.9261810              2.0622787
-#> 4              0.2045669             -0.1517046             -1.5083227
-#> 5             -0.2084699              0.4175251             -1.0203460
-#> 6              2.7473810             -1.7053123             -1.3051898
-#> 7             -1.0558793              0.4503020              1.0489763
+#> 1             -1.1708380              1.8001095              0.1165725
+#> 2              0.2254571              0.7037879             -1.5463236
+#> 3              0.1331642             -2.9289843              2.0556140
+#> 4              0.2046449             -0.1518837             -1.4604515
+#> 5             -0.2099232              0.4201808             -1.0326021
+#> 6              2.7731562             -1.7613913             -1.3286030
+#> 7             -1.0471477              0.4538336              1.0321906
 #>   p.reference_AF_afr p.reference_AF_eas p.reference_AF_eur p.reference_AF_iam
-#> 1         1.33558283         1.43983187        1.749854076         0.07401883
-#> 2         0.24231622         1.72359688        0.824312964         0.48220582
-#> 3         1.75156004         1.13378822        0.892927743         1.99603065
-#> 4         0.02928169         1.19982463        0.838189707         1.12037490
-#> 5         1.76823418         0.01221486        1.164853210         0.67689535
-#> 6         1.24482061         0.93582959        0.006749047         1.90977991
-#> 7         1.03609543         1.55623489        1.706529994         0.65343000
+#> 1         1.32866795         1.42751123        1.756479449         0.07385291
+#> 2         0.24187650         1.73619988        0.821932644         0.48266327
+#> 3         1.75002361         1.13358109        0.894243199         1.99606431
+#> 4         0.03321477         1.20082683        0.838128855         1.12051591
+#> 5         1.75979958         0.01283748        1.165985635         0.67495872
+#> 6         1.23907216         0.93717470        0.006261399         1.91977666
+#> 7         1.03579557         1.57048323        1.702540977         0.65089422
 #>   p.reference_AF_sas
-#> 1         0.90463020
-#> 2         1.88357427
-#> 3         0.04091791
-#> 4         1.86641058
-#> 5         1.69078177
-#> 6         1.80615982
-#> 7         0.29662060
+#> 1         0.90735477
+#> 2         1.87585225
+#> 3         0.04156537
+#> 4         1.85372858
+#> 5         1.69653671
+#> 6         1.81398980
+#> 7         0.30437724
 ```
 
 <br><br>
 
-Below is an example of plotting the reference ancestry proportions
+Below is an example of plotting the reference group proportions
 estimated in each block using *summix_local()*; where asterisks indicate
-local ancestry blocks that are at least nominally significant
+local substructure blocks that are at least nominally significant
 (p-value\<=.05).
 
 ![](man/figures/README-local_anc_ex.png)
