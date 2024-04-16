@@ -1,3 +1,4 @@
+
 #' adjAF
 #'
 #' @description
@@ -116,7 +117,7 @@ adjAF <- function(data,
   
   
   #check the effective sample size of the adjusted AF, if less than 50% of observed sample size, print warning
-  eff_samp_size = floor(sum(pmin(pi.observed, pi.target)*N_observed + N_reference*pmin(1,(pi.target*length(pi.target)))))
+  eff_samp_size = floor(sum(pmin(pi.observed, pi.target)*N_observed + N_reference*(pi.target)))
   cat('\n')
   if (eff_samp_size < .5*N_observed){
     warning('Your effective sample size of the adjusted alelle frequency is less than 50% of the observed sample size.')
@@ -218,6 +219,9 @@ adjAF <- function(data,
     res$effective.sample.size <- eff_samp_size
   }
   
+  if(adj_method == "leave_one_out"){
+    reference = append(reference, "Left Out")
+  }
   print(noquote('$pi'))
   print(cbind.data.frame('ref.group' = reference, 'pi.observed' = pi.observed, 'pi.target' = pi.target))
   cat('\n')
