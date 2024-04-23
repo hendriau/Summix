@@ -90,15 +90,15 @@ adjAF <- function(data,
   
   #Calculate average fold change of pi.observed to pi.target for across all reference groups
   ave_fold_change = mean(abs(((pi.target+.001)-(pi.observed+.001))/(pi.observed+.001)))
-  print(paste0('Average fold change between observed and target group proportions is: ', round(ave_fold_change, 2)))
+  #print(paste0('Average fold change between observed and target group proportions is: ', round(ave_fold_change, 2)))
   #if average fold change is greater than 3 and less than or equal to 5, print warning
-  if (ave_fold_change > 3 & ave_fold_change <= 5){
-    print("Warning: The average fold change between the observed and target group proportions is greater than 3.")
+  if (ave_fold_change > 3){
+    print("Warning: The average fold change between the observed and target group proportions is greater than 3. The effective sample size of the adjusted AF is likely substantially lower than the observed sample size.")
   }
-  #if average fold change is greater than 5, print warning. AF adjustment with average fold change of pi.observed to pi.target greater than 5 is not recommended
-  if (ave_fold_change > 5){
-    warning("The average fold change between the observed and target group proportions is greater than 5. It is not recommended to perform this AF adjustment.")
-  }
+  # #if average fold change is greater than 5, print warning. AF adjustment with average fold change of pi.observed to pi.target greater than 5 is not recommended
+  # if (ave_fold_change > 5){
+  #   warning("The average fold change between the observed and target group proportions is greater than 5. It is not recommended to perform this AF adjustment.")
+  # }
   
   fold_change = (floor(sum(pmin(pi.observed, pi.target)*N_observed + N_reference*min(1,pi.target*length(pi.target))))*pi.target - (N_observed*pi.observed+N_reference))/(N_observed*pi.observed+N_reference)
   fold_change_refs = c()
@@ -112,12 +112,19 @@ adjAF <- function(data,
     }
   }
   if (large_fold_change==TRUE){
-    warning(paste0('Based on the observed group and reference group sample sizes, the observed to target group proportion increase for the ', list(fold_change_refs),' group is too large. ', 'This group adjustment is not recommended.'))
+    warning(paste0('Based on the observed group and reference group sample sizes, the observed to target group proportion increase for the ', list(fold_change_refs),' group is too large. ', 'This AF adjustment is not recommended. The effective sample size of the adjusted AF is likely substantially lower than the observed sample size.'))
   }
   
   
   #check the effective sample size of the adjusted AF, if less than 50% of observed sample size, print warning
-  eff_samp_size = floor(sum(pmin(pi.observed, pi.target)*N_observed + N_reference*(pi.target)))
+  
+  
+  if(adj_method == "average"){
+    eff_samp_size = floor(sum(pmin(pi.observed, pi.target)*N_observed + N_reference*(pi.target)))
+  }
+  if(adj_method == "leave_one_out"){
+    eff_samp_size = floor(sum(pmin(tail(pi.observed, 1), tail(pi.target, 1))*N_observed + sum(as.vector((N_reference[1:length(N_reference)-1])*(pi.target[1:length(pi.target)-1])))))
+  }
   cat('\n')
   if (eff_samp_size < .5*N_observed){
     warning('Your effective sample size of the adjusted alelle frequency is less than 50% of the observed sample size.')

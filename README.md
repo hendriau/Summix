@@ -28,17 +28,12 @@ example](#a-quick-demo-of-summix_local)
 
 # Package Installation
 
-To install Summix2, ensure you are in the devel version of R- (to
-install in Windows click
-[here](https://cran.r-project.org/bin/windows/base/rdevel.html)). Start
-R (version “4.4”)-the devel version- and run the following commands:
+To install this package, start R (version “4.3”) and run the following
+commands:
 
 ``` r
-if(!requireNamespace("BiocManager", quietly = TRUE))
+if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
-
-#The following initializes usage of the Bioconductor development version of Summix2
-BiocManager::install(version = "devel")
 
 BiocManager::install("Summix")
 ```
@@ -346,7 +341,7 @@ summix(data = ancestryData,
     pi.start = c(.2, .2, .2, .2, .2),
     goodness.of.fit=TRUE)
 #>   goodness.of.fit iterations          time filtered reference_AF_afr
-#> 1       0.4853597         20 0.611496 secs        0         0.812142
+#> 1       0.4853597         20 0.400059 secs        0         0.812142
 #>   reference_AF_eur reference_AF_iam
 #> 1         0.169953         0.017905
 ```
@@ -397,7 +392,6 @@ adjusted_data<-adjAF(data = ancestryData,
      N_reference = c(704,741),
      N_observed = 20744,
      filter = TRUE)
-#> [1] "Average fold change between observed and target group proportions is: 0.58"
 #> 
 #> 
 #> [1] "Note: In this AF adjustment, 0 SNPs (with adjusted AF > -.005 & < 0) were rounded to 0. 0 SNPs (with adjusted AF > 1) were rounded to 1, and 0 SNPs (with adjusted AF <= -.005) were removed from the final results."
@@ -415,7 +409,7 @@ adjusted_data<-adjAF(data = ancestryData,
 #> 
 #> 
 #> [1] $effective.sample.size
-#> [1] 17632
+#> [1] 18336
 #> 
 #> 
 #> [1] "use $adjusted.AF$adjustedAF to see adjusted AF data"
@@ -470,18 +464,18 @@ results <- summix_local(data = ancestryData,
                         position_col = "POS")
 #> [1] "Done getting LA proportions"
 #> [1] "Running internal simulations for SE"
-#> Time difference of 26.28405 mins
+#> Time difference of 14.6037 mins
 #> [1] "Discovered 7 LA blocks"
 
 print(results$results)
 #>   Start_Pos  End_Pos goodness.of.fit iterations       time filtered
-#> 1  10595784 19258643       1.2555376         10 0.11531401        0
-#> 2  19258643 25252606       0.5018649         13 0.13095212        0
-#> 3  25252606 30743600       0.2304807         11 0.12141204        0
-#> 4  30743600 35846592       0.2933341         14 0.09059906        0
-#> 5  35846592 42706228       0.5480859         14 0.12785411        0
-#> 6  42706228 47902876       0.2634092         11 0.09985900        0
-#> 7  47902876 50791970       0.2891929         10 0.10150504        0
+#> 1  10595784 19258643       1.2555376         10 0.07431006        0
+#> 2  19258643 25252606       0.5018649         13 0.06914687        0
+#> 3  25252606 30743600       0.2304807         11 0.09435987        0
+#> 4  30743600 35846592       0.2933341         14 0.06985497        0
+#> 5  35846592 42706228       0.5480859         14 0.08147001        0
+#> 6  42706228 47902876       0.2634092         11 0.07047892        0
+#> 7  47902876 50791970       0.2891929         10 0.07448006        0
 #>   reference_AF_afr reference_AF_eas reference_AF_eur reference_AF_iam
 #> 1         0.809208         0.000000         0.146185         0.034417
 #> 2         0.816933         0.000000         0.161511         0.021556
@@ -491,37 +485,37 @@ print(results$results)
 #> 6         0.810130         0.004046         0.181798         0.004025
 #> 7         0.811265         0.000000         0.148492         0.019896
 #>   reference_AF_sas nSNPs t.reference_AF_afr.avg t.reference_AF_eas.avg
-#> 1         0.010189   150            -0.42515627            -0.56563248
-#> 2         0.000000   149             1.17498125            -1.12168665
-#> 3         0.030550   149            -1.15490928            -0.16849942
-#> 4         0.000000   149             2.14943215            -0.25487230
-#> 5         0.000000   149            -1.17919401             2.51861561
-#> 6         0.000000   149            -0.30482100             0.07895457
-#> 7         0.020347   104            -0.04498638            -0.79311456
+#> 1         0.010189   150            -0.42983402            -0.57246570
+#> 2         0.000000   149             1.18423949            -1.12115283
+#> 3         0.030550   149            -1.17237028            -0.16709502
+#> 4         0.000000   149             2.16714328            -0.25417286
+#> 5         0.000000   149            -1.20356079             2.59092514
+#> 6         0.000000   149            -0.30990966             0.08074482
+#> 7         0.020347   104            -0.04639998            -0.78998535
 #>   t.reference_AF_eur.avg t.reference_AF_iam.avg t.reference_AF_sas.avg
-#> 1             -1.1708380              1.8001095              0.1165725
-#> 2              0.2254571              0.7037879             -1.5463236
-#> 3              0.1331642             -2.9289843              2.0556140
-#> 4              0.2046449             -0.1518837             -1.4604515
-#> 5             -0.2099232              0.4201808             -1.0326021
-#> 6              2.7731562             -1.7613913             -1.3286030
-#> 7             -1.0471477              0.4538336              1.0321906
+#> 1             -1.1638315              1.7969415              0.1184779
+#> 2              0.2251513              0.7049114             -1.5471141
+#> 3              0.1344480             -2.9091082              2.0429083
+#> 4              0.2037762             -0.1515260             -1.4744624
+#> 5             -0.2099120              0.4182795             -1.0374927
+#> 6              2.7308539             -1.7056958             -1.3479503
+#> 7             -1.0668582              0.4557509              1.0478613
 #>   p.reference_AF_afr p.reference_AF_eas p.reference_AF_eur p.reference_AF_iam
-#> 1         1.32866795         1.42751123        1.756479449         0.07385291
-#> 2         0.24187650         1.73619988        0.821932644         0.48266327
-#> 3         1.75002361         1.13358109        0.894243199         1.99606431
-#> 4         0.03321477         1.20082683        0.838128855         1.12051591
-#> 5         1.75979958         0.01283748        1.165985635         0.67495872
-#> 6         1.23907216         0.93717470        0.006261399         1.91977666
-#> 7         1.03579557         1.57048323        1.702540977         0.65089422
+#> 1         1.33206678         1.43213645        1.753659817         0.07435691
+#> 2         0.23820394         1.73597350        0.822170054         0.48196583
+#> 3         1.75708055         1.13247816        0.893229762         1.99581985
+#> 4         0.03181271         1.20028756        0.838806442         1.12023427
+#> 5         1.76933192         0.01052294        1.165976886         0.67634501
+#> 6         1.24293732         0.93575325        0.007079613         1.90985156
+#> 7         1.03691957         1.56866612        1.711493802         0.64951928
 #>   p.reference_AF_sas
-#> 1         0.90735477
-#> 2         1.87585225
-#> 3         0.04156537
-#> 4         1.85372858
-#> 5         1.69653671
-#> 6         1.81398980
-#> 7         0.30437724
+#> 1         0.90584749
+#> 2         1.87604292
+#> 3         0.04282398
+#> 4         1.85753312
+#> 5         1.69881293
+#> 6         1.82027985
+#> 7         0.29713165
 ```
 
 <br><br>

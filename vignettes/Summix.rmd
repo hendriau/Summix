@@ -20,31 +20,175 @@ knitr::opts_chunk$set(
 ```
 
 
-Summix2 is a suite of methods that detect and leverage substructure in genetic summary data. This package builds on Summix, a method that estimates and adjusts for substructure in genetic summary that was developed by the Hendricks Research Team at the University of Colorado Denver.
+Summix2 is a suite of methods to estimate, adjust, and leverage substructure in genetic summary data. This package builds on Summix, a method that estimates and adjusts for substructure in genetic summary that was developed by the Hendricks Research Team at the University of Colorado.
+
+Genetic summary data are broadly accessible and highly useful including for risk prediction, causal inference, fine mapping, and the incorporation of external control information. However, collapsing individual-level data into groups masks intra- and inter-sample heterogeneity, leading to confounding, reduced power, and bias. Unaccounted substructure limits summary data usability, especially for understudied or admixed populations. Summix2 characterizes global and local genetic substructure, adjusts for global and local genetic substructure, and identifies potential regions of selection due to local substructure deviation.  Summix2 increases the robust use of diverse publicly available summary data resulting in improved and more equitable research to address disease etiology and risk prediction.
+
+
+<br><br>
+Find more details about Summix2 in our [**preprint up on BioRxiv**](https://www.biorxiv.org/content/10.1101/2024.01.29.577805v1).
 
 Find more details about Summix in our [**manuscript published in the American Journal of Human Genetics**](https://doi.org/10.1016/j.ajhg.2021.05.016).
 
-For individual function specifics in Summix2:
+
+<br><br><br>
+This document introduces you to Summix2 functions and gives simple examples of how they might applied to genetic summary data.
+
+
+<br><br>
+To jump forward to individual function specifics in Summix2:
 
 [**summix**](#summix) --- [fast forward to example](#a-quick-demo-of-summix)
 
 [**adjAF**](#adjaf) --- [fast forward to example](#a-quick-demo-of-adjaf)
 
 [**summix_local**](#summix_local) --- [fast forward to example](#a-quick-demo-of-summix_local)
+<br><br><br>
 
 # Package Installation
 
-To install Summix2, ensure you are in the devel version of R- (to install in Windows click [here](https://cran.r-project.org/bin/windows/base/rdevel.html)). Start R (version "4.4")-the devel version- and run the following commands:
+
+To install this package, start R (version "4.3") and run the following commands:
 
 ``` r
-if(!requireNamespace("BiocManager", quietly = TRUE))
+if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
-
-#The following initializes usage of the Bioconductor development version of Summix2
-BiocManager::install(version = "devel")
 
 BiocManager::install("Summix")
 ```
+
+
+
+<br><br><br>
+
+## Summix2 Functionalities
+
+<center>
+![](man/figures/summix_capabilities.png)
+</center>
+
+<br>
+Summix2 has three primary methods to detect and leverage substructure in genetic summary data. The summix() function is used to detect substructure proportions given AFs for the observed and reference groups, summix_local() is the used to detect local substructure proportions, and adjAF() adjusts AFs for an observed sample to match the substructure proportions of a target sample or individual.
+
+
+<br><br><br>
+
+## Example of Summix2 Workflow
+
+
+Before diving into running Summix2 functions and interpreting output, let's start by considering a sample of African (AFR) individuals we are interested in studying. We see in the pie chart below that this sample has 100% African-like genetic substructure.
+<br><br>
+
+<center>
+
+![](man/figures/target_sample.png)
+</center>
+
+<br>
+Lets assume we need access to allele frequencies (AFs) from an appropriate control group (a group with 100% African genetic substructure) to complete the study. We can access publicly available AFs from the [**Genome Aggregation Database (gnomAD)**](https://gnomad.broadinstitute.org/). However, gnomAD only offers AFs across 20,744 African/African American (AFR/AFRAM) individuals. In order for these AFs to be appropriate controls for a study of African individuals, the population substructure within gnomAD's AFR/AFRAM AFs needs to be accounted for. 
+
+<br>
+Here is where Summix2 comes in. 
+
+
+<br>
+We begin by using summix() to capture the population substructure in the AFR/AFRAM AFs. We prepare a data frame containing the observed gnomAD AFR/AFRAM AFs, and reference AFs from homogenous groups. Here, we use AFs from homogenous continental-level reference groups- sourced from the Human Genome Diversity Project and 1000 Genomes Project data [**released with gnomAD v3.1.2**](https://gnomad.broadinstitute.org/news/2021-10-gnomad-v3-1-2-minor-release/). 
+
+
+```{r}
+library(Summix)
+print(head(ancestryData))
+```
+
+<br><br>
+Next, we apply summix() to the data frame with the observed group set as gnomAD's AFR/AFRAM AF vector (observed="gnomad_AF_afr") the reference groupings set as all homogenous continental-level reference groups (reference=c("reference_AF_afr", "reference_AF_eas", "reference_AF_eur", "reference_AF_iam", "reference_AF_sas").
+```{r}
+summix(data = ancestryData,
+    reference=c("reference_AF_afr",
+        "reference_AF_eas",
+        "reference_AF_eur",
+        "reference_AF_iam",
+        "reference_AF_sas"),
+    observed="gnomad_AF_afr")
+```
+<br>
+In this output we see summix() estimates the observed gnomAD AFR/AFRAM AFs to contain approximately 81% African-like, 17% EUR-like, and 1.8% IAM-like mixing proportions. <br>
+<br><br>
+
+A visual representation of the above process and output:
+<center>
+
+![](man/figures/summix_ex.png) 
+
+</center>
+
+<br><br>
+
+Now that we have captured the substructure within the genetic summary data, we use Summix2's adjAF() to adjust the substructure to match that of the 100% African target sample.
+<br>
+
+<center>
+
+![](man/figures/adjAF_ex.png) 
+
+</center>
+
+When adjusting the genetic substructure, we use only the reference groups with non-zero mixing proportions in the observed and target samples, and ensure the order of mixing proportions in pi.target and pi.observed are in the same order as the reference groups. <br>
+We also include the sample sizes for each of the reference groups (N_reference = c(704,741, 47)) and the observed group (N_observed = 20744) to get the effective sample size calculation for the adjusted AF vector. 
+
+```{r}
+
+adjusted_data<-adjAF(data = ancestryData,
+     reference = c("reference_AF_afr", "reference_AF_eur", "reference_AF_iam"),
+     observed = "gnomad_AF_afr",
+     pi.target = c(1, 0, 0),
+     pi.observed = c(0.812142, 0.169953, 0.017905),
+     adj_method = 'average',
+     N_reference = c(704,741, 47),
+     N_observed = 20744,
+     filter = TRUE)
+
+```
+We see that no SNPs were removed from the AF adjusted data frame (only SNPs with AFs that were less than -.005 are removed). Importantly, the effective sample size of the adjusted AF is 17,551 - which can be important for downstream analyses. 
+
+We can take a look at the adjusted AF data frame, and the appended adjusted AF vector (adjustedAF).
+
+```{r}
+print(adjusted_data$adjusted.AF[1:5,])
+
+
+```
+
+
+<br><br><br>
+Using Summix2, we can harmonize the genetic substructure across multiple data sets for secondary analyses.
+![](man/figures/data_harm_ex.png) 
+
+
+
+
+
+
+
+<br><br><br><br><br><br>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## An in depth look at all Summix2 functionalities
+
+
 
 <br><br><br>
 
@@ -278,29 +422,29 @@ The commands:
 library(Summix)
 
 # load the data
-data("ancestryData")
-
-results <- summix_local(data = ancestryData,
-                        reference = c("reference_AF_afr", 
-                                      "reference_AF_eas", 
-                                      "reference_AF_eur", 
-                                      "reference_AF_iam", 
-                                      "reference_AF_sas"),
-                        NSimRef = c(704,787,741,47,545),
-                        observed="gnomad_AF_afr",
-                        goodness.of.fit = T,
-                        type = "variants",
-                        algorithm = "fastcatch",
-                        minVariants = 150,
-                        maxVariants = 250,
-                        maxStepSize = 1000,
-                        diffThreshold = .02,
-                        override_fit = F,
-                        override_removeSmallAnc = TRUE,
-                        selection_scan = F,
-                        position_col = "POS")
-
-print(results$results)
+# data("ancestryData")
+# 
+# results <- summix_local(data = ancestryData,
+#                         reference = c("reference_AF_afr",
+#                                       "reference_AF_eas",
+#                                       "reference_AF_eur",
+#                                       "reference_AF_iam",
+#                                       "reference_AF_sas"),
+#                         NSimRef = c(704,787,741,47,545),
+#                         observed="gnomad_AF_afr",
+#                         goodness.of.fit = T,
+#                         type = "variants",
+#                         algorithm = "fastcatch",
+#                         minVariants = 150,
+#                         maxVariants = 250,
+#                         maxStepSize = 1000,
+#                         diffThreshold = .02,
+#                         override_fit = F,
+#                         override_removeSmallAnc = TRUE,
+#                         selection_scan = F,
+#                         position_col = "POS")
+# 
+# print(results$results)
 
 ```
 
