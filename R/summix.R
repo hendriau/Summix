@@ -89,8 +89,8 @@ summix <- function(data,
   #with pi.start specified
   sum_res <- summix_calc(data = data, reference = reference,
                          observed = observed, pi.start = pi.start)
-    
-    
+  
+  
   
   
   # get the scaled objective and replace the objective argument (first column of 'summix' function output) with the updated objective value
@@ -125,7 +125,7 @@ summix <- function(data,
   
   if(network) {
     return(list(sum_res, summix_network(data = data, sum_res = sum_res, reference = reference, N_reference = N_reference, reference_colors=reference_colors)))
-    }else{
+  }else{
     return(sum_res)
   }
 }
@@ -313,19 +313,21 @@ summix_calc = function(data, reference, observed, pi.start=NA){
 
 calc_scaledObj <- function(data, reference, observed, pi.start) {
   start_time <- Sys.time()
+  # Will perform summix calculation on SNPs only within these bins (only need one side of the distribution since it is symmetrical)
+  bins <- c("0-0.1", "0.1-0.3", "0.3-0.5")
   # these are the weights that the bins' objective will be multiplied by
   multiplier <- c(5, 1.5, 1)
   
-  # Will perform summix calculation on SNPs only within these bins (only need one side of the distribution since it is symmetrical)
   data$obs <- data[[observed]]
   
-  breaks <- c(0, 0.1, 0.3, 0.5)
-  data$bin <- cut(data$obs, breaks = breaks, include.lowest = T, right = FALSE,
-                  labels = c(1, 2, 3))
-  
+  # create bins and run summix on each bin
+  data <- data %>% dplyr::rowwise() %>%
+    dplyr::mutate(bin = dplyr::case_when(obs <= 0.1 ~ 1,
+                                         obs >0.1 & obs <= 0.3 ~ 2,
+                                         obs >0.3 & obs <= 0.5 ~ 3))
   for(b in 1:3) {
     # subset data to only SNPs in given bin
-    subdata <- data[data$bin == b,]
+    subdata <- data[which(data$bin == b),]
     
     # ensure there are SNPs in the given bin before running summix
     if(nrow(subdata) > 0) {
@@ -334,7 +336,7 @@ calc_scaledObj <- function(data, reference, observed, pi.start) {
       # isolate just the objective and scale per 1000 SNPs
       res$obj_adj <-  res$goodness.of.fit/(nrow(subdata)/1000)
       res$nSNPs <- nrow(subdata)
-      res$bin <- b
+      res$bin <- bins[b]
       if(b == 1) {
         sum_res <- res
       } else {
@@ -348,7 +350,7 @@ calc_scaledObj <- function(data, reference, observed, pi.start) {
                          observed = observed, pi.start)
       res$obj_adj <- NA
       res$nSNPs <- 0
-      res$bin <- b
+      res$bin <- bins[b]
       if(b == 1) {
         sum_res <- res
       } else {
@@ -375,6 +377,7 @@ calc_scaledObj <- function(data, reference, observed, pi.start) {
   #return scaled objective value for the summix reference group proportion estimates
   return(objective_scaled)
 }
+
 
 
 #' summix_network
