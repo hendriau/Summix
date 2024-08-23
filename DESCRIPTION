@@ -1,6 +1,6 @@
 Package: Summix
 Title: Summix2: A suite of methods to estimate, adjust, and leverage substructure in genetic summary data
-Version: 2.11.0
+Version: 2.11.1
 Authors@R: c(person("Audrey", "Hendricks", email = "audrey.hendricks@cuanschutz.edu", role = "cre"), person("Price", "Adelle", email = "adelle.price@cuanschutz.edu", role = "aut"),person("Stoneman", "Haley", email = "hayley.stoneman@cuanschutz.edu", role = "aut"))
 Description: This package contains the Summix2 method for estimating and adjusting for substructure in genetic summary allele frequency data. The function summix() estimates reference group proportions using a mixture model. The adjAF() function produces adjusted allele frequencies for an observed group with reference group proportions matching a target individual or sample. The summix_local() function estimates local ancestry mixture proportions and performs selection scans in genetic summary data.
 License: MIT + file LICENSE
