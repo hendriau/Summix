@@ -1,4 +1,3 @@
-
 #' adjAF
 #'
 #' @description
@@ -21,7 +20,6 @@
 #' @return adjusted.AF: data frame of original data with an appended column of adjusted allele frequencies
 #' @return effective.sample.size: The sample size of individuals effectively represented by the adjusted allele frequencies
 #' @importFrom stats "na.omit"
-#' @importFrom utils "tail"
 #'
 #'
 #' @author Adelle Price, \email{adelle.price@cuanschutz.edu}
