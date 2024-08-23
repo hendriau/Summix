@@ -19,9 +19,9 @@ citEntry(entry = "Article",
   url          = "https://doi.org/10.1101/2024.01.29.577805",
 
   textVersion  =
-  paste("Hayley R Stoneman, Adelle Price, Nikole Scribner Trout, Riley Lamont, Souha Tifour, Nikita Pozdeyev, Kristy Crooks, Meng Lin, Nicholas Rafaels, Katie M Marker, Christopher R Gignoux, Audrey E Henrdicks (2024).",
+  paste("Hayley R Stoneman, Adelle Price, Nikole Scribner Trout, Riley Lamont, Souha Tifour, Nikita Pozdeyev, Kristy Crooks, Meng Lin, Nicholas Rafaels, Katie M Marker, Christopher R Gignoux, Audrey E Hendricks (2024).",
         "Characterizing substructure via mixture modeling of genetic similarity in large-scale summary statistics",
-        "bioRxiv 2024.01.29.577805.",
-        "doi: https://doi.org/10.1101/2024.01.29.577805.")
+        "bioRxiv 2024.01.29.577805",
+        "doi: https://doi.org/10.1101/2024.01.29.577805")
 )
 
