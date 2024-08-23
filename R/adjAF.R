@@ -1,4 +1,3 @@
-
 #' adjAF
 #'
 #' @description

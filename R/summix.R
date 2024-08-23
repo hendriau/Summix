@@ -89,8 +89,8 @@ summix <- function(data,
   #with pi.start specified
   sum_res <- summix_calc(data = data, reference = reference,
                          observed = observed, pi.start = pi.start)
-    
-    
+  
+  
   
   
   # get the scaled objective and replace the objective argument (first column of 'summix' function output) with the updated objective value
@@ -125,7 +125,7 @@ summix <- function(data,
   
   if(network) {
     return(list(sum_res, summix_network(data = data, sum_res = sum_res, reference = reference, N_reference = N_reference, reference_colors=reference_colors)))
-    }else{
+  }else{
     return(sum_res)
   }
 }
