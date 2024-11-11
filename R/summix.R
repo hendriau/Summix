@@ -1,3 +1,4 @@
+
 #' summix
 #'
 #' @description
@@ -313,21 +314,22 @@ summix_calc = function(data, reference, observed, pi.start=NA){
 
 calc_scaledObj <- function(data, reference, observed, pi.start) {
   start_time <- Sys.time()
-  # Will perform summix calculation on SNPs only within these bins (only need one side of the distribution since it is symmetrical)
-  bins <- c("0-0.1", "0.1-0.3", "0.3-0.5")
   # these are the weights that the bins' objective will be multiplied by
   multiplier <- c(5, 1.5, 1)
   
+  # Will perform summix calculation on SNPs only within these bins (only need one side of the distribution since it is symmetrical)
   data$obs <- data[[observed]]
   
-  # create bins and run summix on each bin
-  data <- data %>% dplyr::rowwise() %>%
-    dplyr::mutate(bin = dplyr::case_when(obs <= 0.1 ~ 1,
-                                         obs >0.1 & obs <= 0.3 ~ 2,
-                                         obs >0.3 & obs <= 0.5 ~ 3))
+  data$maf_obs <- ifelse(data$obs > 0.5, 1-data$obs, data$obs)
+  
+  breaks <- c(0, 0.1, 0.3, 0.5)
+  data$bin <- cut(data$maf_obs, breaks = breaks, include.lowest = T, right = FALSE,
+                  labels = c(1, 2, 3))
+  
   for(b in 1:3) {
     # subset data to only SNPs in given bin
-    subdata <- data[which(data$bin == b),]
+    subdata <- data[data$bin == b,]
+    subdata <- subdata[complete.cases(subdata), ]
     
     # ensure there are SNPs in the given bin before running summix
     if(nrow(subdata) > 0) {
@@ -336,7 +338,7 @@ calc_scaledObj <- function(data, reference, observed, pi.start) {
       # isolate just the objective and scale per 1000 SNPs
       res$obj_adj <-  res$goodness.of.fit/(nrow(subdata)/1000)
       res$nSNPs <- nrow(subdata)
-      res$bin <- bins[b]
+      res$bin <- b
       if(b == 1) {
         sum_res <- res
       } else {
@@ -350,7 +352,7 @@ calc_scaledObj <- function(data, reference, observed, pi.start) {
                          observed = observed, pi.start)
       res$obj_adj <- NA
       res$nSNPs <- 0
-      res$bin <- bins[b]
+      res$bin <- b
       if(b == 1) {
         sum_res <- res
       } else {

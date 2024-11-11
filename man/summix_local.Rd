@@ -22,7 +22,8 @@ summix_local(
   override_fit = FALSE,
   override_removeSmallAnc = FALSE,
   selection_scan = FALSE,
-  position_col = "POS"
+  position_col = "POS",
+  nSimSE = 1000
 )
 }
 \arguments{
@@ -61,6 +62,8 @@ summix_local(
 \item{selection_scan}{user option to perform a selection scan on the given chromosome. Default is FALSE. If set as TRUE, a test statistic will be calculated for each local substructure block. Note: the user can expect extended computation time if this option is set as TRUE.}
 
 \item{position_col}{a character value that is the column name for the genetic variants positions. Default is "POS".}
+
+\item{nSimSE}{user choice of number of internal simulations to run to calculate standard error of estimates. Default is 1000.}
 }
 \value{
 data frame with a row for each local substructure block and the following columns:

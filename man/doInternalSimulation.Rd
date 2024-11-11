@@ -4,7 +4,7 @@
 \alias{doInternalSimulation}
 \title{doInternalSimulation}
 \usage{
-doInternalSimulation(windows, data, reference, observed, nRefs)
+doInternalSimulation(windows, data, reference, observed, nRefs, nSim = 1000)
 }
 \arguments{
 \item{windows}{is a dataframe with the Start_Pos and End_Pos}
@@ -16,6 +16,8 @@ doInternalSimulation(windows, data, reference, observed, nRefs)
 \item{observed}{a character value that is the column name for the observed group}
 
 \item{nRefs}{is a vector the same lengths as reference with the number of individuals in each reference population}
+
+\item{nSim}{is the number of internal simulations for the standard error calculations}
 }
 \description{
 Helper function to get the within block se using re-simulation

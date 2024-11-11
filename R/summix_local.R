@@ -1,3 +1,4 @@
+
 #' summix_local
 #'
 #' @description
@@ -26,6 +27,7 @@
 #' @param observed a character value that is the column name for the observed group.
 #' @param position_col a character value that is the column name for the genetic variants positions. Default is "POS".
 #' @param maxStepSize a numeric value that defines the maximum gap in base pairs between two consecutive genetic variants within a given window. Default is 1000.
+#' @param nSimSE user choice of number of internal simulations to run to calculate standard error of estimates. Default is 1000.
 #' @param algorithm user choice of algorithm to define local substructure blocks; options "fastcatch" and "windows" are available. "windows" uses a fixed window in a sliding windows algorithm. "fastcatch" allows dynamic window sizes. The "fastcatch" algorithm is recommended- though it is computationally slower. Default is "fastcatch".
 #' @param type user choice of how to define window size; options "variants" and "bp" are available where "variants" defines window size as the number of variants in a given window and "bp" defines window size as the number of base pairs in a given window. Default is "variants".
 #' @param override_fit default is FALSE. If set as TRUE, the user will override the auto-stop of summix_local() that occurs if the global goodness of fit value is greater than 1.5 (indicating a poor fit of the reference data to the observed data).
@@ -37,7 +39,7 @@
 #' @param maxWindowSize Used if type = "bp". A numeric value that defines the maximum allowed window size by the number of base pairs in a given window.
 #' @param minVariants Used if algorithm = "fastcatch" and type = "variants". A numeric value that specifies the minimum number of genetic variants allowed to define a given window.
 #' @param minWindowSize Used if algorithm = "fastcatch" and type = "bp". A numeric value that specifies the minimum number of base pairs allowed to define a given window.
-#' @param  NSimRef Used if f selection_scan = TRUE. A numeric vector of the sample sizes for each of the K reference groups that is in the same order as the reference parameter. This is used in a simulation framework that calculates within local substructure block standard error.
+#' @param NSimRef Used if f selection_scan = TRUE. A numeric vector of the sample sizes for each of the K reference groups that is in the same order as the reference parameter. This is used in a simulation framework that calculates within local substructure block standard error.
 #'
 #' @return data frame with a row for each local substructure block and the following columns:
 #' @return goodness.of.fit: scaled objective reflecting the fit of the reference data. Values between 0.5-1.5 are considered moderate fit and should be used with caution. Values greater than 1.5 indicate poor fit, and users should not perform further analyses using summix
@@ -91,7 +93,7 @@ summix_local <- function(data, reference, observed, goodness.of.fit = TRUE,
                          minWindowSize = 0, windowOverlap = 200,
                          maxStepSize=1000, diffThreshold = .02, NSimRef=NULL, override_fit = FALSE,
                          override_removeSmallAnc = FALSE, selection_scan = FALSE,
-                         position_col = "POS") {
+                         position_col = "POS", nSimSE = 1000) {
   # valid input checking
   if(!(tolower(type) == "variants" | tolower(type) == "bp")) {
     stop(paste0("ERROR: type needs to be one of c('variants', 'bp'), user input: ", type))
@@ -133,7 +135,7 @@ summix_local <- function(data, reference, observed, goodness.of.fit = TRUE,
                            observed = observed)
   if(globTest$goodness.of.fit > 1.5 & override_fit == F) {
     return(paste0("Reference not sufficiently well matched to observed sample: objective > 1.5 (",
-                  globTest$goodness.of.fit, ") [to override stop use override = TRUE]"))
+                  globTest$goodness.of.fit, ") [to override stop use override_fit = TRUE]"))
   }
   
   # remove any references with prop < 2%
@@ -198,6 +200,7 @@ summix_local <- function(data, reference, observed, goodness.of.fit = TRUE,
         iteration = iteration + 1
         
         subData <- chrData[startPoint:endPoint, ]
+        
         lastProportions <- summix_quiet(subData,
                                         reference = reference,
                                         observed = observed,
@@ -392,7 +395,8 @@ summix_local <- function(data, reference, observed, goodness.of.fit = TRUE,
                                  data = data,
                                  reference = reference,
                                  observed = observed,
-                                 nRefs = NSimRef)
+                                 nRefs = NSimRef,
+                                 nSim = nSimSE)
     
     # calculate test statistic by weighted average of SD and simulated sE
     statVals <- data.frame(matrix(ncol = length(reference),
@@ -412,9 +416,13 @@ summix_local <- function(data, reference, observed, goodness.of.fit = TRUE,
                                nrow = nrow(results)))
     colnames(pvals) <- paste0("p.", reference)
     for(i in 1:length(reference)){
-      pvals[ , i] <- 2*pt(statVals[ , i], df = results$nSNPs, lower.tail = F)
+      pvals[ , i] <- 2*pt(abs(statVals[ , i]), df = results$nSNPs, lower.tail = F)
     }
+    
+    p_cauchy <- apply(pvals, 1, function(x) CCT(x))
+    
     results <- cbind(results, pvals)
+    results$p_cauchy <- p_cauchy
     
     end_time <- Sys.time()
     print(difftime(end_time, start_time, units = "auto"))
@@ -475,7 +483,7 @@ sizeGetNext <- function (positions, start, minSize) {
 
 variantGetNext <- function(positions, start, minVariants) {
   if((start + minVariants - 1) < length(positions)) {
-    return(start + minVariants - 1)
+    return(start + minVariants)
   } else {
     return(length(positions))
   }
@@ -593,12 +601,14 @@ getNextStartPoint <- function(data, start, end, overlap) {
 #' @param reference is a list with the names of the columns with references
 #' @param observed a character value that is the column name for the observed group
 #' @param nRefs is a vector the same lengths as reference with the number of individuals in each reference population
+#' @param nSim is the number of internal simulations for the standard error calculations
 #'
-#' @importFrom stats "sd" "rmultinom"
+#' @importFrom stats "sd" "rmultinom" "complete.cases" "pcauchy"
 #'
 #' @export
 
-doInternalSimulation <- function(windows, data, reference, observed, nRefs) {
+doInternalSimulation <- function(windows, data, reference, observed, nRefs,
+                                 nSim = 1000) {
   
   allSE <- matrix(nrow = nrow(windows), ncol = length(reference))
   colnames(allSE) <- reference
@@ -607,22 +617,21 @@ doInternalSimulation <- function(windows, data, reference, observed, nRefs) {
   
   # for each window in the results
   for(i in 1:nrow(windows)) {
-    props <- data.frame(matrix(nrow = 1000, ncol = length(reference)))
-    for(boot in 1:1000) {
+    props <- data.frame(matrix(nrow = nSim, ncol = length(reference)))
+    
+    for(boot in 1:nSim) {
       # first subset data to just SNPs in window
       subdata <- data[(data$POS>=windows[i,]$Start_Pos & data$POS<=windows[i,]$End_Pos),]
       
       # simulate new reference
       for(r in 1:length(reference)) {
-        newVals <- rep(0, nrow(subdata))
+        #newVals <- rep(0, nrow(subdata))
         vals <- subdata[[reference[r]]]
-        for(s in 1:nrow(subdata)) {
-          sim <- rmultinom(1, nRefs[r], c(vals[s]**2,
-                                          2*vals[s]*(1-vals[s]),
-                                          (1-vals[s])**2))
-          newVals[s] <- ((sim[1]*2) + (sim)[2])/(2*nRefs[r])
-        }
         
+        sim <- t(sapply(vals, function(x) {
+          rmultinom(1, nRefs[r], c(x^2, 2*x*(1-x), (1-x)^2))
+        }))
+        newVals <- apply(sim, 1, function(x) ((x[1]*2)+x[2])/(2*nRefs[r]))
         subdata <- cbind.data.frame(subdata, newVals)
         names(subdata)[ncol(subdata)] <- paste0("S_", reference[r])
       }
@@ -664,3 +673,30 @@ summix_quiet <- function(data, reference, observed, pi.start = NA, goodness.of.f
   
   return(sum_res)
 }
+
+# function for An analytical p-value combination method using the Cauchy distribution adapted from
+# STAAR package
+CCT <- function(pvals, weights=NULL){
+  
+  if(is.null(weights)){
+    weights <- rep(1/length(pvals),length(pvals))
+    
+    #### check if there are very small non-zero p-values
+    is.small <- (pvals < 1e-16)
+    if (sum(is.small) == 0){
+      cct.stat <- sum(weights*tan((0.5-pvals)*pi))
+    }else{
+      cct.stat <- sum((weights[is.small]/pvals[is.small])/pi)
+      cct.stat <- cct.stat + sum(weights[!is.small]*tan((0.5-pvals[!is.small])*pi))
+    }
+    
+    #### check if the test statistic is very large.
+    if(cct.stat > 1e+15){
+      pval <- (1/cct.stat)/pi
+    }else{
+      pval <- 1-pcauchy(cct.stat)
+    }
+    return(pval)
+  }
+}
+
