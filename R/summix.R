@@ -25,10 +25,10 @@
 #' @author Adelle Price, \email{adelle.price@cuanschutz.edu}
 #' @author Hayley Wolff, \email{hayley.wolff@cuanschutz.edu}
 #' @author Audrey Hendricks, \email{audrey.hendricks@cuanschutz.edu}
-#' @references https://github.com/hendriau/Summix2
+#' @references https://github.com/hendriau/Summix
 #' @keywords genetics, mixture distribution, admixture, population stratification
 #'
-#' @seealso \url{https://github.com/hendriau/Summix2} for further documentation. \code{\link[nloptr]{slsqp}} function in the nloptr package for further details on Sequential Quadratic Programming \url{https://www.rdocumentation.org/packages/nloptr/versions/1.2.2.2/topics/slsqp}
+#' @seealso \url{https://github.com/hendriau/Summix} for further documentation. \code{\link[nloptr]{slsqp}} function in the nloptr package for further details on Sequential Quadratic Programming \url{https://www.rdocumentation.org/packages/nloptr/versions/1.2.2.2/topics/slsqp}
 #'
 #' @examples
 #' # load the data
