@@ -28,7 +28,7 @@
 #' @references https://github.com/hendriau/Summix
 #' @keywords genetics, mixture distribution, admixture, population stratification
 #'
-#' @seealso \url{https://github.com/hendriau/Summix} for further documentation. \code{\link[nloptr]{slsqp}} function in the nloptr package for further details on Sequential Quadratic Programming \url{https://www.rdocumentation.org/packages/nloptr/versions/1.2.2.2/topics/slsqp}
+#' @seealso \url{https://github.com/hendriau/Summix} for further documentation and \url{https://github.com/hendriau/Summix2_manuscript} for a larger sample data set and description of simulations in Summix2 manuscript. \code{\link[nloptr]{slsqp}} function in the nloptr package for further details on Sequential Quadratic Programming \url{https://www.rdocumentation.org/packages/nloptr/versions/1.2.2.2/topics/slsqp}
 #'
 #' @examples
 #' # load the data
